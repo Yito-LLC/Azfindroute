@@ -58,6 +58,39 @@ input {
     color: rgba(0, 0, 0, .7)
 }
 
+.search-submit {
+    display: inline-flex;
+    flex: 0 0 40px;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #999;
+    border-radius: 50%;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+}
+
+.search-submit svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 2;
+}
+
+.search-submit:hover {
+    background: #e8e8e8;
+}
+
+.search-submit:focus-visible {
+    outline: 2px solid #666;
+    outline-offset: 2px;
+}
+
 .map-controls {
     position: absolute;
     z-index: 2;

@@ -1,5 +1,17 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+const initialCenter = [-111.94, 33.4255];
+const arizonaCenter = [-111.66, 34.27];
+const minimumFocusZoom = 5;
+const addressFocusZoom = 18;
+/**const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: initialCenter,
+    zoom: 15,
+    pitch: 60,
+    bearing: -17
+});**/
 
 import {
     getAuth,
@@ -44,6 +56,22 @@ let addressMarker = null;
 let is3D = true;
 let mapInitialized = false;
 let mapInitializing = false;
+let lastAddressCenter;
+
+map.on('zoomend', () => {
+    if (map.getZoom() < minimumFocusZoom) {
+        map.easeTo({
+            center: lastAddressCenter || arizonaCenter,
+            zoom: minimumFocusZoom,
+            duration: 700
+        });
+    }
+});
+
+const addressForm = document.getElementById('address-form');
+const addressInput = document.getElementById('address');
+const mapStatus = document.getElementById('map-status');
+const viewToggle = document.getElementById('map-view-toggle');
 
 function showMessage(message) {
     authStatus.textContent = message;
@@ -218,6 +246,16 @@ async function initializeMap() {
         });
 
         mapInitialized = true;
+        const [longitude, latitude] = feature.center;
+        lastAddressCenter = [longitude, latitude];
+        if (addressMarker) {
+            addressMarker.setLngLat([longitude, latitude]);
+        } else {
+            addressMarker = new mapboxgl.Marker({ color: '#d32f2f' });
+        }
+        addressMarker.addTo(map);
+        map.flyTo({ center: [longitude, latitude], zoom: addressFocusZoom });
+        mapStatus.textContent = `Pin added for ${feature.place_name}.`;
     } catch (error) {
         console.error(error);
         document.getElementById("map-status").textContent =
