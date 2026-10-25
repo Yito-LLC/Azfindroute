@@ -33,6 +33,9 @@ Repository to help with the Tempe Union Bus System.
 - `style.css` — shared styles for every page.
 - `site-info.html` — privacy policy, terms of use, accessibility information,
   and help/FAQ, linked from the footer on every page.
+- `i18n.js` — shared English, Simplified Chinese, and Spanish translations.
+  Choose a language in any page footer; the choice is saved in local storage
+  and reused on other pages in the same browser.
 - `busway-logo.png` — the Busway wordmark, used on both auth pages and in
   the map page header.
 

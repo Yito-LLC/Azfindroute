@@ -14,6 +14,7 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css"
           rel="stylesheet">
 
+    <script type="module" src="i18n.js"></script>
     <script type="module" src="main.js"></script>
 </head>
 
@@ -160,6 +161,13 @@
 
     <footer class="site-footer">
         <nav aria-label="Site information">
+            <label class="language-picker" for="language-select">Language
+                <select id="language-select" aria-label="Language">
+                    <option value="en">English</option>
+                    <option value="zh-CN">简体中文</option>
+                    <option value="es">Español</option>
+                </select>
+            </label>
             <a href="site-info.html#privacy" target="_blank" rel="noopener">Privacy Policy</a>
             <a href="site-info.html#terms" target="_blank" rel="noopener">Terms of Use</a>
             <a href="site-info.html#accessibility" target="_blank" rel="noopener">Accessibility</a>
