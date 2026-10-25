@@ -45,8 +45,63 @@ input {
 
 #map {
     width: 100%;
-    height: 60vh;
-    min-height: 400px;
+    height: 78vh;
+    min-height: 560px;
+}
+
+.address-autocomplete {
+    position: relative;
+}
+
+.address-suggestions {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    max-height: 280px;
+    margin: 0;
+    padding: 4px;
+    overflow-y: auto;
+    border: 1px solid #d5d5d5;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .16);
+    list-style: none;
+}
+
+.address-suggestion {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #222;
+    text-align: left;
+    cursor: pointer;
+}
+
+.address-suggestion:hover,
+.address-suggestions [aria-selected="true"] .address-suggestion {
+    background: #f0f4f8;
+}
+
+.address-suggestion-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.address-suggestion-context,
+.address-suggestion-message {
+    color: #666;
+    font-size: 12px;
+}
+
+.address-suggestion-message {
+    padding: 10px 12px;
 }
 
 .search:focus-within {
@@ -213,7 +268,11 @@ input {
 }
 
 .map-status {
-    min-height: 1.5em;
+    margin: 0;
+}
+
+.map-status:empty {
+    display: none;
 }
 
 .visually-hidden {

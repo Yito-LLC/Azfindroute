@@ -19,13 +19,12 @@ import {
     fitToBusStops,
     setVisibleSchools,
     schoolSummary,
-    nearestBusStop,
-    locatedStops,
-    unlocatedStops
+    nearestBusStop
 } from "./bus-stop-layers.js";
 
 const initialCenter = [-111.94, 33.4255];
 const arizonaCenter = [-111.66, 34.27];
+const arizonaBounds = [-114.818, 31.332, -109.045, 37.004];
 const minimumFocusZoom = 5;
 const addressFocusZoom = 18;
 const walkingRouteSourceId = "nearest-stop-walking-route";
@@ -38,6 +37,7 @@ const accessToken = document.querySelector(
 const appView = document.getElementById("app-view");
 const addressForm = document.getElementById("address-form");
 const addressInput = document.getElementById("address");
+const addressSuggestions = document.getElementById("address-suggestions");
 const mapStatus = document.getElementById("map-status");
 const viewToggle = document.getElementById("map-view-toggle");
 const schoolFilters = document.getElementById("school-filters");
@@ -53,8 +53,19 @@ let mapInitialized = false;
 let mapInitializing = false;
 let lastAddressCenter;
 let walkingRouteRequestId = 0;
+let suggestionTimer = null;
+let suggestionController = null;
+let selectedSuggestion = null;
+let activeSuggestionIndex = -1;
 
 const visibleSchools = new Set(schoolSummary().map(school => school.name));
+
+function isArizonaFeature(feature) {
+    const region = feature.context?.find(item => item.id?.startsWith("region."));
+
+    return region?.short_code?.toUpperCase() === "US-AZ" ||
+        feature.properties?.short_code?.toUpperCase() === "US-AZ";
+}
 
 function buildSchoolFilters() {
     schoolFilters.replaceChildren();
@@ -250,13 +261,6 @@ function setViewMode(use3D, { animate }) {
     }
 }
 
-function describeStopCount() {
-    const missing = unlocatedStops.length;
-
-    return `${locatedStops.length} bus stops mapped for ${visibleSchools.size} schools.` +
-        (missing ? ` ${missing} stop${missing === 1 ? "" : "s"} could not be placed.` : "");
-}
-
 // The welcome screen is the way back in - it reads any "why were you signed
 // out" message and then asks login or register.
 function goToSignIn() {
@@ -294,6 +298,9 @@ function loadScript(src, id) {
 
 async function searchAddress(event) {
     event.preventDefault();
+    clearTimeout(suggestionTimer);
+    suggestionController?.abort();
+    closeAddressSuggestions();
 
     const address = addressInput.value.trim();
 
@@ -304,28 +311,41 @@ async function searchAddress(event) {
 
     mapStatus.textContent = "Finding address…";
 
-    const params = new URLSearchParams({
-        access_token: accessToken,
-        country: "US",
-        limit: "1",
-        proximity: `${initialCenter[0]},${initialCenter[1]}`
-    });
-
     try {
-        const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?${params}`
-        );
+        let feature = selectedSuggestion?.place_name === address
+            ? selectedSuggestion
+            : null;
 
-        if (!response.ok) {
-            throw new Error(`Address lookup failed (${response.status}).`);
+        if (!feature) {
+            const params = new URLSearchParams({
+                access_token: accessToken,
+                bbox: arizonaBounds.join(","),
+                country: "US",
+                limit: "1",
+                proximity: `${initialCenter[0]},${initialCenter[1]}`
+            });
+            const response = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?${params}`
+            );
+
+            if (!response.ok) {
+                throw new Error(`Address lookup failed (${response.status}).`);
+            }
+
+            const result = await response.json();
+            feature = result.features?.[0];
         }
 
-        const result = await response.json();
-        const feature = result.features?.[0];
+        selectedSuggestion = null;
 
         if (!feature) {
             mapStatus.textContent =
-                "No matching address found. Check the address and try again.";
+                "No matching address found in Arizona. Check the address and try again.";
+            return;
+        }
+
+        if (!isArizonaFeature(feature)) {
+            mapStatus.textContent = "Enter an address located in Arizona.";
             return;
         }
 
@@ -357,6 +377,133 @@ async function searchAddress(event) {
         mapStatus.textContent =
             "Unable to find that address. Please try again.";
     }
+}
+
+function closeAddressSuggestions() {
+    addressSuggestions.replaceChildren();
+    addressSuggestions.hidden = true;
+    addressInput.setAttribute("aria-expanded", "false");
+    addressInput.removeAttribute("aria-activedescendant");
+    activeSuggestionIndex = -1;
+}
+
+function showAddressSuggestions(features) {
+    addressSuggestions.replaceChildren();
+    activeSuggestionIndex = -1;
+    addressInput.removeAttribute("aria-activedescendant");
+
+    for (const [index, feature] of features.entries()) {
+        const option = document.createElement("li");
+        const button = document.createElement("button");
+        const placeName = document.createElement("span");
+        const context = document.createElement("span");
+
+        option.id = `address-suggestion-${index}`;
+        option.setAttribute("role", "option");
+        option.setAttribute("aria-selected", "false");
+        button.type = "button";
+        button.className = "address-suggestion";
+        placeName.className = "address-suggestion-name";
+        placeName.textContent = feature.text || feature.place_name;
+        context.className = "address-suggestion-context";
+        context.textContent = feature.place_name;
+        button.append(placeName, context);
+        button.addEventListener("pointerdown", event => event.preventDefault());
+        button.addEventListener("click", () => {
+            addressInput.value = feature.place_name;
+            selectedSuggestion = feature;
+            closeAddressSuggestions();
+            addressForm.requestSubmit();
+        });
+        option.append(button);
+        addressSuggestions.append(option);
+    }
+
+    const hasSuggestions = features.length > 0;
+    addressSuggestions.hidden = !hasSuggestions;
+    addressInput.setAttribute("aria-expanded", String(hasSuggestions));
+}
+
+function showSuggestionError() {
+    addressSuggestions.replaceChildren();
+    const message = document.createElement("li");
+    message.className = "address-suggestion-message";
+    message.setAttribute("role", "status");
+    message.textContent = "Arizona suggestions unavailable. Press Enter to search the address.";
+    addressSuggestions.append(message);
+    addressSuggestions.hidden = false;
+    addressInput.setAttribute("aria-expanded", "true");
+}
+
+async function fetchAddressSuggestions(query) {
+    suggestionController?.abort();
+    suggestionController = new AbortController();
+    const { signal } = suggestionController;
+    const params = new URLSearchParams({
+        access_token: accessToken,
+        autocomplete: "true",
+        bbox: arizonaBounds.join(","),
+        country: "US",
+        limit: "5",
+        proximity: `${initialCenter[0]},${initialCenter[1]}`
+    });
+
+    try {
+        const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${params}`,
+            { signal }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Address suggestions failed (${response.status}).`);
+        }
+
+        const result = await response.json();
+        if (!signal.aborted) {
+            showAddressSuggestions(
+                (result.features || []).filter(isArizonaFeature)
+            );
+        }
+    } catch (error) {
+        if (error.name === "AbortError") return;
+
+        console.error(error);
+        showSuggestionError();
+    }
+}
+
+function updateAddressSuggestions() {
+    clearTimeout(suggestionTimer);
+    suggestionController?.abort();
+    selectedSuggestion = null;
+
+    const query = addressInput.value.trim();
+    if (query.length < 3) {
+        closeAddressSuggestions();
+        return;
+    }
+
+    suggestionTimer = setTimeout(() => fetchAddressSuggestions(query), 250);
+}
+
+function moveActiveSuggestion(direction) {
+    const options = [...addressSuggestions.querySelectorAll('[role="option"]')];
+    if (!options.length) return false;
+
+    activeSuggestionIndex = activeSuggestionIndex < 0
+        ? (direction > 0 ? 0 : options.length - 1)
+        : (activeSuggestionIndex + direction + options.length) % options.length;
+
+    for (const [index, option] of options.entries()) {
+        const selected = index === activeSuggestionIndex;
+        option.setAttribute("aria-selected", String(selected));
+        if (selected) {
+            addressInput.setAttribute("aria-activedescendant", option.id);
+            option.scrollIntoView({ block: "nearest" });
+        }
+    }
+
+    return true;
 }
 
 async function initializeMap() {
@@ -447,8 +594,6 @@ async function initializeMap() {
             fitToBusStops(map);
             buildSchoolFilters();
 
-            mapStatus.textContent = describeStopCount();
-
             viewToggle.disabled = false;
             map.resize();
         });
@@ -458,6 +603,23 @@ async function initializeMap() {
         });
 
         addressForm.addEventListener("submit", searchAddress);
+        addressInput.addEventListener("input", updateAddressSuggestions);
+        addressInput.addEventListener("keydown", event => {
+            if (event.key === "ArrowDown" && moveActiveSuggestion(1)) {
+                event.preventDefault();
+            } else if (event.key === "ArrowUp" && moveActiveSuggestion(-1)) {
+                event.preventDefault();
+            } else if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+                event.preventDefault();
+                addressSuggestions.querySelectorAll('[role="option"] button')
+                    [activeSuggestionIndex]?.click();
+            } else if (event.key === "Escape") {
+                closeAddressSuggestions();
+            }
+        });
+        addressInput.addEventListener("blur", () => {
+            setTimeout(closeAddressSuggestions, 120);
+        });
         schoolSelect.addEventListener("change", showNearestStop);
 
         mapInitialized = true;

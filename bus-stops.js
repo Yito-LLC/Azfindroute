@@ -8,21 +8,21 @@
 export const schools = [
     {
         "name": "Corona del Sol",
-        "color": "#0f766e",
+        "color": "#f97316",
         "address": "1001 E Knox Rd, Tempe, AZ 85284",
         "lon": -111.925474,
         "lat": 33.325541
     },
     {
         "name": "Desert Vista",
-        "color": "#b45309",
+        "color": "#2563eb",
         "address": "16440 S 32nd St, Phoenix, AZ 85048",
         "lon": -112.01635,
         "lat": 33.295839
     },
     {
         "name": "Marcos de Niza",
-        "color": "#7c3aed",
+        "color": "#eab308",
         "address": "6000 S Lakeshore Dr, Tempe, AZ 85283",
         "lon": -111.92044,
         "lat": 33.366502
@@ -36,14 +36,14 @@ export const schools = [
     },
     {
         "name": "Mountain Pointe",
-        "color": "#1d4ed8",
+        "color": "#dc2626",
         "address": "4201 E Knox Rd, Phoenix, AZ 85044",
         "lon": -111.991769,
         "lat": 33.325129
     },
     {
         "name": "Tempe High",
-        "color": "#15803d",
+        "color": "#0f766e",
         "address": "1730 S Mill Ave, Tempe, AZ 85281",
         "lon": -111.940671,
         "lat": 33.408904

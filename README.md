@@ -132,11 +132,13 @@ will be denied by Firestore.
 ## Map
 
 The map is powered by Mapbox GL JS and opens in 3D. Use the map control to switch
-between 3D and 2D. Enter an address and choose a school to pin the nearest
-mapped stop associated with that school and draw the fastest available walking
-route from that stop to the address. The map reports the route distance and
-estimated walking time; a separate pin marks the address. Walking routes
-require the Mapbox Directions API to be enabled for the access token.
+between 3D and 2D. Enter an Arizona address and choose a school to pin the
+nearest mapped stop associated with that school and draw the fastest available
+walking route from that stop to the address. Address suggestions are limited to
+Arizona and appear as you type.
+The map reports the route distance and estimated walking time; a separate pin
+marks the address. Walking routes require the Mapbox Directions API to be
+enabled for the access token.
 
 If you zoom out below level 5, the map recenters on your most recently searched
 address, or on Arizona if you have not searched for an address yet.
