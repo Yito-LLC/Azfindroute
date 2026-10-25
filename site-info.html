@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy, terms &amp; help · Busway</title>
+    <link rel="icon" href="busway-logo.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="info-page">
+    <header class="info-header">
+        <a href="index.html" aria-label="Busway map">
+            <img src="busway-logo.png" alt="Busway" width="540" height="270">
+        </a>
+        <a href="index.html">Back to map</a>
+    </header>
+
+    <main class="info-content">
+        <h1>Site information</h1>
+        <p class="info-updated">Last updated: October 25, 2026</p>
+
+        <section id="privacy">
+            <h2>Privacy Policy</h2>
+            <p>
+                Busway helps Tempe Union families find bus stops and view
+                schedule information. This policy describes information handled
+                by this site.
+            </p>
+
+            <h3>Information you provide</h3>
+            <ul>
+                <li>
+                    When you create an account or sign in, Firebase
+                    Authentication processes your email address and account
+                    credentials. Google sign-in also involves Google.
+                </li>
+                <li>
+                    Students who invite a parent provide the parent's email
+                    address. The invite record contains the student and parent
+                    email addresses, invite status, and sign-in/acceptance
+                    timestamps.
+                </li>
+                <li>
+                    Address searches are sent to Mapbox to find a location and,
+                    if a school is selected, request walking directions. The
+                    address and search results are held in the page while you
+                    use it; Busway does not save searched addresses in its
+                    Firestore database.
+                </li>
+            </ul>
+
+            <h3>Service providers and technical data</h3>
+            <p>
+                The site uses Firebase Authentication and Firestore, Mapbox for
+                maps, geocoding and directions, and a content delivery network
+                for Web Awesome on account pages. These providers receive the
+                technical information needed to deliver their services, such
+                as your IP address and requests made by your browser. Their
+                handling of information is governed by their own privacy
+                policies, including the
+                <a href="https://www.mapbox.com/legal/privacy/"
+                target="_blank" rel="noopener noreferrer">Mapbox Privacy
+                Policy</a> and
+                <a href="https://firebase.google.com/support/privacy"
+                target="_blank" rel="noopener noreferrer">Firebase privacy
+                information</a>. This site does not currently load a Google
+                Analytics SDK.
+            </p>
+
+            <h3>How information is used and retained</h3>
+            <p>
+                Account information is used to authenticate users and decide
+                student or parent access. Invite records remain in Firestore
+                until the student or an authorized administrator removes them.
+                Firebase account data is retained by Firebase according to the
+                project's configuration and provider terms. Contact us to
+                request help with account or information deletion.
+            </p>
+
+            <h3>Children and location searches</h3>
+            <p>
+                The site is intended for students and their families. Do not
+                enter another person's home address without permission. Address
+                searches are transmitted to Mapbox; review Mapbox's privacy
+                policy before using that feature.
+            </p>
+
+            <h3>Contact</h3>
+            <p>
+                Questions or privacy requests:
+                <a href="mailto:yinoah8@gmail.com">yinoah8@gmail.com</a>.
+            </p>
+        </section>
+
+        <section id="terms">
+            <h2>Terms of Use</h2>
+            <p>
+                Busway is provided to help families explore Tempe Union bus
+                stops and schedule information. Use it lawfully and only with
+                addresses you are permitted to use.
+            </p>
+            <p>
+                Stop locations, schedules, geocoding, and walking directions
+                may be incomplete, approximate, delayed, or out of date.
+                Walking directions are not school-bus routes. Confirm bus
+                details with the district and use your own judgment when
+                travelling; do not rely on this site for safety-critical or
+                time-sensitive decisions.
+            </p>
+            <p>
+                The map, address lookup, and authentication features depend on
+                third-party services and may be unavailable. Use of those
+                services is subject to their terms. The site is provided “as
+                is” to the extent permitted by law.
+            </p>
+            <p>
+                Contact <a href="mailto:yinoah8@gmail.com">yinoah8@gmail.com</a>
+                with questions about these terms.
+            </p>
+        </section>
+
+        <section id="accessibility">
+            <h2>Accessibility</h2>
+            <p>
+                We aim to make Busway usable with keyboard navigation, visible
+                focus indicators, labels, and screen-reader status messages.
+                Some interactive map features may not be fully accessible.
+            </p>
+            <p>
+                If you encounter an accessibility barrier or need information
+                in another format, contact
+                <a href="mailto:yinoah8@gmail.com">yinoah8@gmail.com</a> and
+                describe the page and issue.
+            </p>
+        </section>
+
+        <section id="help">
+            <h2>Help / FAQ</h2>
+            <h3>How do I find a bus stop?</h3>
+            <p>
+                Enter an Arizona address, choose your school, and select an
+                address suggestion or submit the search. Busway marks the
+                closest mapped stop for that school and may show a walking
+                route to the address.
+            </p>
+
+            <h3>Are walking directions the school bus route?</h3>
+            <p>
+                No. Walking directions only connect the selected stop and
+                searched address. Confirm school bus schedules and route
+                information with the district.
+            </p>
+
+            <h3>How does a parent get access?</h3>
+            <p>
+                A student signs in, opens Parent access, and invites the
+                parent's email. The parent then signs in with that invited
+                address.
+            </p>
+
+            <h3>Where can I get more help?</h3>
+            <p>
+                Email <a href="mailto:yinoah8@gmail.com">yinoah8@gmail.com</a>
+                or visit the <a href="https://www.tempeunion.org/"
+                target="_blank" rel="noopener noreferrer">Tempe Union district
+                website</a>.
+            </p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <nav aria-label="Site information">
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms of Use</a>
+            <a href="#accessibility">Accessibility</a>
+            <a href="mailto:yinoah8@gmail.com">Contact</a>
+            <a href="https://www.tempeunion.org/" target="_blank" rel="noopener noreferrer">District website</a>
+            <a href="#help">Help / FAQ</a>
+        </nav>
+    </footer>
+</body>
+</html>

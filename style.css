@@ -3,6 +3,14 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+body.info-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f7f8fa;
+    color: #222;
+}
+
 button,
 input {
     font: inherit;
@@ -667,6 +675,98 @@ input {
     margin: 8px 0 0;
     color: #15803d;
     font-size: 11px;
+}
+
+.site-footer {
+    padding: 18px 24px;
+    border-top: 1px solid #e2e2e2;
+    background: #f7f8fa;
+}
+
+.site-footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 22px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.site-footer a {
+    color: #44505f;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.site-footer a:hover {
+    color: #1a56b3;
+}
+
+.site-footer a:focus-visible,
+.info-page a:focus-visible {
+    outline: 2px solid #1a56b3;
+    outline-offset: 3px;
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px max(24px, calc((100vw - 900px) / 2));
+    border-bottom: 1px solid #e2e2e2;
+    background: #fff;
+}
+
+.info-header img {
+    display: block;
+    width: auto;
+    height: 56px;
+}
+
+.info-header a,
+.info-content a {
+    color: #1a56b3;
+}
+
+.info-content {
+    box-sizing: border-box;
+    flex: 1 0 auto;
+    width: min(900px, 100%);
+    margin: 0 auto;
+    padding: 36px 24px 56px;
+    background: #fff;
+    line-height: 1.65;
+}
+
+.info-content h1 {
+    margin: 0 0 4px;
+    font-size: clamp(28px, 4vw, 38px);
+}
+
+.info-content h2 {
+    margin: 38px 0 10px;
+    padding-top: 4px;
+    font-size: 24px;
+}
+
+.info-content h3 {
+    margin: 22px 0 6px;
+    font-size: 17px;
+}
+
+.info-content p {
+    margin: 8px 0 14px;
+}
+
+.info-content li {
+    margin: 7px 0;
+}
+
+.info-updated {
+    color: #666;
+    font-size: 14px;
 }
 
 .app-header {

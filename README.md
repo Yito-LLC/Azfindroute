@@ -5,7 +5,8 @@ Repository to help with the Tempe Union Bus System.
 
 - `welcome.html` / `welcome.js` — the landing screen, and the way back in when
   you are signed out. It carries no form: just the logo, **Login** and
-  **Register**. Everything else is one screen per job behind it.
+  **Register**. Everything else is one screen per job behind it. The shared
+  footer links to site information and support.
 - `signin.html` / `signin.js` — signing an existing account in: email and
   password, or Google. "Forgot password?" emails a sign-in link, because
   opening one lands on the "set a password" step. Firebase email links land
@@ -30,6 +31,8 @@ Repository to help with the Tempe Union Bus System.
 - `sign-in-link.js` — sends the email sign-in links used by invites.
 - `firestore.rules` — security rules for the parent invites.
 - `style.css` — shared styles for every page.
+- `site-info.html` — privacy policy, terms of use, accessibility information,
+  and help/FAQ, linked from the footer on every page.
 - `busway-logo.png` — the Busway wordmark, used on both auth pages and in
   the map page header.
 
