@@ -1,0 +1,77 @@
+rules_version = '2';
+
+// Publish from the Firebase Console (Firestore -> Rules -> Publish), or with
+// firebase deploy --only firestore:rules
+//
+// parentInvites holds one document per student/parent pair, with the id
+// "<studentUid>__<parent email>". The document is the parent's permanent key to
+// the site: as long as it exists the parent may sign in, and the student who
+// created it can revoke it at any time.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /parentInvites/{inviteId} {
+
+      function signedIn() {
+        return request.auth != null && request.auth.token.email != null;
+      }
+
+      function callerEmail() {
+        return request.auth.token.email.lower();
+      }
+
+      function mine() {
+        return request.auth.uid == resource.data.studentUid
+          || callerEmail() == resource.data.parentEmail;
+      }
+
+      // Uncomment and keep in step with schoolEmailDomains in auth.js once the
+      // district domain list is confirmed, so only students can invite parents.
+      // function isSchoolEmail() {
+      //   return callerEmail().matches('.*@tuhsd[.]k12[.]az[.]us');
+      // }
+
+      // `resource` is null when the document does not exist yet. A student
+      // checking whether they already invited someone hits exactly that case,
+      // so denying it breaks adding a parent before the create rule is ever
+      // reached. Do not fold this back into a single `allow read`.
+      allow get: if signedIn() && (resource == null || mine());
+
+      // the student sees the parents they added, the parent sees their own invite
+      allow list: if signedIn() && mine();
+
+      // ---------------------------------------------------------------
+      // TEMPORARY (added 2026-10-25) - REVERT THIS
+      // `&& request.auth.token.email_verified == true` was removed from the
+      // create rule below while the project's Firebase email quota was spent
+      // and no verification mail could be delivered.
+      // See "Active temporary changes" in CLAUDE.md.
+      // ---------------------------------------------------------------
+      allow create: if signedIn()
+        // && isSchoolEmail()
+        && inviteId == request.auth.uid + '__' + request.resource.data.parentEmail
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.studentEmail == callerEmail()
+        && request.resource.data.parentEmail is string
+        && request.resource.data.parentEmail == request.resource.data.parentEmail.lower()
+        && request.resource.data.parentEmail != callerEmail()
+        && request.resource.data.status == 'pending';
+
+      // only the student who invited the parent can take the access away
+      allow delete: if signedIn() && request.auth.uid == resource.data.studentUid;
+
+      // the invited parent marks their own invite as used on first sign-in and
+      // may not touch anything else about it
+      allow update: if signedIn()
+        && callerEmail() == resource.data.parentEmail
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'parentUid', 'acceptedAt'])
+        && request.resource.data.status == 'active'
+        && request.resource.data.parentUid == request.auth.uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

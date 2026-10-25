@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busway</title>
+
+    <link rel="icon" href="busway-logo.png">
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.0.0/dist-cdn/styles/webawesome.css">
+    <script type="module"
+            src="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.0.0/dist-cdn/webawesome.loader.js"></script>
+
+    <script type="module" src="welcome.js"></script>
+</head>
+
+<body>
+    <div id="file-warning" class="file-warning" hidden>
+        <strong>This page needs a web server.</strong>
+        <span>
+            Opening it straight from the folder blocks the page's code from
+            loading, so it stays blank. Run
+            <code>python -m http.server 8000</code> in this folder (or use the
+            VS Code Live Server extension), then open
+            <code>http://localhost:8000/welcome.html</code>.
+        </span>
+    </div>
+
+    <script>
+        // Classic script on purpose: the module scripts below are exactly what
+        // the file:// protocol refuses to load.
+        if (location.protocol === "file:") {
+            document.getElementById("file-warning").hidden = false;
+        }
+    </script>
+
+    <main id="auth-view" class="is-welcome">
+        <section id="welcome-view" data-view="welcome">
+            <div class="welcome-hero">
+                <img class="welcome-logo" src="busway-logo.png"
+                     alt="Busway - your school, your route."
+                     width="540" height="270">
+                <p class="welcome-tagline">
+                    Find your stop, your route and your times.
+                </p>
+            </div>
+
+            <p id="auth-status" role="status" aria-live="polite"></p>
+
+            <div class="welcome-actions">
+                <wa-button id="go-signin" variant="brand" type="button">
+                    Login
+                </wa-button>
+
+                <wa-button id="go-signup" appearance="outlined" type="button">
+                    Register
+                </wa-button>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

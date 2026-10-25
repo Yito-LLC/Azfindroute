@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create account · Busway</title>
+
+    <link rel="icon" href="busway-logo.png">
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.0.0/dist-cdn/styles/webawesome.css">
+    <script type="module"
+            src="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.0.0/dist-cdn/webawesome.loader.js"></script>
+
+    <script type="module" src="signup.js"></script>
+</head>
+
+<body>
+    <div id="file-warning" class="file-warning" hidden>
+        <strong>This page needs a web server.</strong>
+        <span>
+            Opening it straight from the folder blocks the sign-up code from
+            loading, so the page stays blank. Run
+            <code>python -m http.server 8000</code> in this folder (or use the
+            VS Code Live Server extension), then open
+            <code>http://localhost:8000/signup.html</code>.
+        </span>
+    </div>
+
+    <script>
+        // Classic script on purpose: the module scripts below are exactly what
+        // the file:// protocol refuses to load.
+        if (location.protocol === "file:") {
+            document.getElementById("file-warning").hidden = false;
+        }
+    </script>
+
+    <main id="auth-view">
+        <button id="auth-back" class="auth-back" type="button" aria-label="Back"
+                data-for-view="role signup">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M15 5 8 12l7 7"></path>
+            </svg>
+        </button>
+
+        <h1 class="auth-title" data-for-view="role">Who is signing up?</h1>
+        <h1 class="auth-title" data-for-view="signup" hidden>
+            Hello! Register to get started
+        </h1>
+
+        <p id="invite-note" class="invite-note" hidden></p>
+
+        <section id="role-view" data-view="role">
+            <button class="role-card" type="button" data-role="student">
+                <span class="role-card-title">I'm a student</span>
+                <span class="role-card-note">
+                    Sign up with your school email address.
+                </span>
+            </button>
+
+            <button class="role-card" type="button" data-role="parent">
+                <span class="role-card-title">I'm a parent</span>
+                <span class="role-card-note">
+                    Your student adds you first, then you sign up with the
+                    address they invited.
+                </span>
+            </button>
+        </section>
+
+        <section id="signup-view" data-view="signup" hidden>
+            <p id="role-note" class="role-note"></p>
+
+            <form id="signup-form">
+                <wa-input
+                    type="email"
+                    name="email"
+                    id="email"
+                    label="Email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                ></wa-input>
+
+                <wa-input
+                    type="password"
+                    name="password"
+                    id="password"
+                    label="Create a password"
+                    placeholder="At least 6 characters"
+                    autocomplete="new-password"
+                    minlength="6"
+                    password-toggle
+                    required
+                ></wa-input>
+
+                <wa-input
+                    type="password"
+                    name="confirmPassword"
+                    id="confirm-password"
+                    label="Confirm password"
+                    placeholder="Type it again"
+                    autocomplete="new-password"
+                    minlength="6"
+                    password-toggle
+                    required
+                ></wa-input>
+
+                <wa-button id="create-account" variant="brand" type="button">
+                    Register
+                </wa-button>
+            </form>
+
+            <div class="auth-divider"><span>Or register with</span></div>
+
+            <wa-button id="google-sign-in" appearance="outlined" type="button">
+                Continue with Google
+            </wa-button>
+        </section>
+
+        <p id="auth-status" role="status" aria-live="polite"></p>
+
+        <section id="verification-view" data-view="verification" hidden>
+            <h2>Verify your email</h2>
+            <p>Check your inbox and open the verification link.</p>
+
+            <wa-button id="resend-verification" variant="brand" type="button">
+                Resend verification email
+            </wa-button>
+
+            <wa-button id="check-verification" appearance="plain" type="button">
+                I've verified my email
+            </wa-button>
+        </section>
+
+        <p class="auth-switch" data-for-view="role signup">
+            Already have an account? <a href="signin.html">Login now</a>
+        </p>
+    </main>
+</body>
+</html>

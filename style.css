@@ -1,4 +1,5 @@
 body {
+    margin: 0;
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -10,9 +11,10 @@ input {
 .search {
     --padding: 22px;
 
+    box-sizing: border-box;
     align-items: center;
     gap: 14px;
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
     display: flex;
     padding: var(--padding);
@@ -22,8 +24,23 @@ input {
     transition: background .25s
 }
 
+.app-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 380px) 1fr;
+    align-items: start;
+    gap: 24px;
+}
+
+.search-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
 .map-container {
     position: relative;
+    min-width: 0;
 }
 
 #map {
@@ -44,7 +61,9 @@ input {
     outline: none;
     border: none;
     background: transparent;
-    width: min(400px, 55vw);
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
 }
 
 .search-icon {
@@ -180,16 +199,15 @@ input {
     border: 0;
 }
 
+@media (max-width: 860px) {
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 600px) {
     .search {
-        box-sizing: border-box;
-        width: 100%;
         padding: 14px;
-    }
-
-    .search-input {
-        min-width: 0;
-        width: 100%;
     }
 }
 
@@ -197,20 +215,19 @@ input {
     padding: 24px;
 }
 
-#address-form wa-input {
-    max-width: 520px;
-}
-
+/* One job per screen: welcome.html asks login-or-register, and the two pages
+   behind it only do the one thing. Everything here is the shared card. */
 #auth-view {
-
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    width: min(420px, calc(100% - 32px));
-    margin: 10vh auto 0;
-    padding: 32px;
+    gap: 20px;
+    box-sizing: border-box;
+    width: min(420px, 100%);
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 28px 24px 32px;
     background: #fff;
-    text-align: center;
+    text-align: left;
 }
 
 #auth-view h1,
@@ -219,11 +236,14 @@ input {
     margin: 0;
 }
 
+#auth-view h2 {
+    font-size: 19px;
+}
+
 #auth-view form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    text-align: left;
+    gap: 14px;
 }
 
 #auth-view wa-button {
@@ -233,7 +253,185 @@ input {
 #auth-view section {
     display: flex;
     flex-direction: column;
+    gap: 14px;
+}
+
+/* the chevron back to the previous step, top left like a native screen */
+.auth-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid #e2e2e2;
+    border-radius: 12px;
+    background: #fff;
+    color: #1e232c;
+    cursor: pointer;
+}
+
+.auth-back svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.auth-back:hover {
+    background: #f4f4f4;
+}
+
+.auth-back:focus-visible {
+    outline: 2px solid #1a56b3;
+    outline-offset: 2px;
+}
+
+/* the one big line that says what this screen is for */
+.auth-title {
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+    color: #1e232c;
+}
+
+.auth-aside {
+    text-align: right;
+}
+
+/* a text button that reads as a link - "Forgot password?" sends a sign-in
+   link rather than navigating, so it cannot be an anchor */
+.auth-link {
+    display: inline;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #1a56b3;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+/* pinned to the bottom of the card, so the form above it can breathe */
+#auth-view .auth-switch {
+    margin-top: auto;
+    padding-top: 24px;
+    color: #555;
+    font-size: 14px;
+    text-align: center;
+}
+
+.auth-switch a {
+    color: #1a56b3;
+    font-weight: 600;
+}
+
+/* --- welcome screen ----------------------------------------------------- */
+
+#auth-view.is-welcome {
+    justify-content: center;
+}
+
+.is-welcome #welcome-view {
+    flex: 1 1 auto;
+    gap: 16px;
+    justify-content: flex-end;
+}
+
+.welcome-hero {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 12px;
+    text-align: center;
+}
+
+.welcome-logo {
+    width: min(260px, 72%);
+    height: auto;
+}
+
+.welcome-tagline {
+    color: #555;
+    font-size: 15px;
+}
+
+.welcome-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* --- the student / parent question -------------------------------------- */
+
+.role-card {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    /* Web Awesome's native.css gives every bare <button> a fixed
+       height: var(--wa-form-control-height), which clipped these to one line */
+    height: auto;
+    padding: 16px 18px;
+    border: 1px solid #d8dde4;
+    border-radius: 14px;
+    background: #fff;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.role-card:hover {
+    border-color: #1a56b3;
+    background: #f7faff;
+}
+
+.role-card:focus-visible {
+    outline: 2px solid #1a56b3;
+    outline-offset: 2px;
+}
+
+.role-card-title {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e232c;
+}
+
+.role-card-note {
+    display: block;
+    color: #5a6472;
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: normal;
+}
+
+/* carried into the form step so the answer stays visible */
+.role-note {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f4f6f9;
+    color: #44505f;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.role-note:empty {
+    display: none;
 }
 
 .auth-divider {
@@ -243,7 +441,23 @@ input {
     font-size: 14px;
 }
 
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1 1 auto;
+    height: 1px;
+    background: #e2e2e2;
+}
 
+.auth-divider span {
+    padding: 0 10px;
+}
+
+#auth-status {
+    color: #44505f;
+    font-size: 14px;
+    line-height: 1.5;
+}
 
 #auth-status:empty {
     display: none;
@@ -251,4 +465,405 @@ input {
 
 [hidden] {
     display: none !important;
+}
+.stop-legend {
+    padding: 16px;
+    border: 1px solid #e2e2e2;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.stop-legend h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+}
+
+.school-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.school-filter {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.school-filter input {
+    margin: 0;
+}
+
+.school-swatch {
+    width: 12px;
+    height: 12px;
+    border: 1px solid rgba(0, 0, 0, .25);
+    border-radius: 50%;
+}
+
+.school-filter-name {
+    font-weight: 600;
+}
+
+.school-filter-count {
+    grid-column: 3;
+    color: #666;
+    font-size: 12px;
+}
+
+.stop-legend-hint {
+    margin: 12px 0 0;
+    color: #666;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.stop-popup h2 {
+    margin: 2px 0 6px;
+    font-size: 15px;
+    line-height: 1.3;
+}
+
+.stop-popup-school {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.stop-popup-detail,
+.stop-popup-program {
+    margin: 0 0 6px;
+    color: #555;
+    font-size: 12px;
+}
+
+.stop-popup-program {
+    font-weight: 600;
+}
+
+.stop-popup table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+}
+
+.stop-popup th,
+.stop-popup td {
+    padding: 3px 6px 3px 0;
+    text-align: left;
+}
+
+.stop-popup thead th {
+    border-bottom: 1px solid #ddd;
+    color: #666;
+    font-weight: 600;
+}
+
+.stop-popup tbody th {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.stop-popup-warning {
+    margin: 8px 0 0;
+    color: #92400e;
+    font-size: 11px;
+}
+
+.stop-popup-source {
+    margin: 8px 0 0;
+    color: #15803d;
+    font-size: 11px;
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 0;
+}
+
+.app-logo {
+    display: block;
+    width: auto;
+    /* a wordmark with a tagline under it, so it needs more height than a
+       plain text heading would to stay readable */
+    height: 54px;
+}
+
+/* sign out and the account controls sit in the top right corner */
+.account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.account-email {
+    color: #555;
+    font-size: 13px;
+    max-width: 24ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-role {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #e8f0fe;
+    color: #1a56b3;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.account button {
+    padding: 7px 14px;
+    border: 1px solid #c8c8c8;
+    border-radius: 999px;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.account button:hover {
+    background: #f1f1f1;
+}
+
+.account button:focus-visible {
+    outline: 2px solid #666;
+    outline-offset: 2px;
+}
+
+#manage-parents {
+    border-color: #1a56b3;
+    color: #1a56b3;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .app-header {
+        flex-wrap: wrap;
+    }
+
+    .account-email {
+        max-width: 100%;
+    }
+}
+
+.parents-dialog {
+    width: min(520px, calc(100% - 32px));
+    padding: 24px;
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+
+.parents-dialog::backdrop {
+    background: rgba(0, 0, 0, .45);
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dialog-header h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.dialog-close {
+    margin-left: auto;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #555;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.dialog-close:hover {
+    background: #f1f1f1;
+}
+
+.dialog-hint {
+    margin: 10px 0 18px;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.parent-form {
+    display: flex;
+    gap: 10px;
+}
+
+.parent-form input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 10px 14px;
+    border: 1px solid #c8c8c8;
+    border-radius: 999px;
+    font-size: 14px;
+}
+
+.parent-form input:focus {
+    outline: none;
+    border-color: #1a56b3;
+    box-shadow: 0 0 0 2px rgba(26, 86, 179, .18);
+}
+
+.parent-form button {
+    flex: 0 0 auto;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: #1a56b3;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.parent-form button:hover {
+    background: #15458f;
+}
+
+.dialog-status {
+    margin: 12px 0 0;
+    color: #444;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.dialog-status:empty {
+    display: none;
+}
+
+.parent-list {
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.parent-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 4px 12px;
+    padding: 12px 14px;
+    border: 1px solid #e2e2e2;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.parent-row.is-empty {
+    display: block;
+    color: #666;
+    font-size: 13px;
+    text-align: center;
+}
+
+.parent-row-email {
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.parent-row-state {
+    grid-column: 1;
+    font-size: 12px;
+}
+
+.parent-row-state.is-joined {
+    color: #15803d;
+}
+
+.parent-row-state.is-pending {
+    color: #92400e;
+}
+
+.parent-row-actions {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    display: flex;
+    gap: 8px;
+}
+
+.parent-row-button {
+    padding: 6px 12px;
+    border: 1px solid #c8c8c8;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.parent-row-button:hover {
+    background: #f1f1f1;
+}
+
+.parent-row-button.is-danger {
+    border-color: #d9a3a3;
+    color: #b42318;
+}
+
+.parent-row-button.is-danger:hover {
+    background: #fdf2f2;
+}
+
+.invite-note {
+    padding: 12px 14px;
+    border: 1px solid #cfe0ff;
+    border-radius: 10px;
+    background: #f3f7ff;
+    color: #1a3a6b;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.file-warning {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: min(620px, calc(100% - 32px));
+    margin: 10vh auto 0;
+    padding: 18px 20px;
+    border: 1px solid #f0c48a;
+    border-radius: 12px;
+    background: #fff8ee;
+    color: #7a4a05;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.file-warning code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #f3e3cb;
+    font-size: 13px;
 }

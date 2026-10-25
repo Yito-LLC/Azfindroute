@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in · Busway</title>
+
+    <link rel="icon" href="busway-logo.png">
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.0.0/dist-cdn/styles/webawesome.css">
+    <script type="module"
+            src="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.0.0/dist-cdn/webawesome.loader.js"></script>
+
+    <script type="module" src="signin.js"></script>
+</head>
+
+<body>
+    <div id="file-warning" class="file-warning" hidden>
+        <strong>This page needs a web server.</strong>
+        <span>
+            Opening it straight from the folder blocks the sign-in code from
+            loading, so the page stays blank. Run
+            <code>python -m http.server 8000</code> in this folder (or use the
+            VS Code Live Server extension), then open
+            <code>http://localhost:8000/signin.html</code>.
+        </span>
+    </div>
+
+    <script>
+        // Classic script on purpose: the module scripts below are exactly what
+        // the file:// protocol refuses to load.
+        if (location.protocol === "file:") {
+            document.getElementById("file-warning").hidden = false;
+        }
+    </script>
+
+    <main id="auth-view">
+        <button id="auth-back" class="auth-back" type="button" aria-label="Back"
+                data-for-view="signin link">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M15 5 8 12l7 7"></path>
+            </svg>
+        </button>
+
+        <h1 class="auth-title" data-for-view="signin">
+            Welcome back! Glad to see you, again!
+        </h1>
+
+        <p id="invite-note" class="invite-note" hidden></p>
+
+        <section id="signin-view" data-view="signin">
+            <form id="signin-form">
+                <wa-input
+                    type="email"
+                    name="email"
+                    id="email"
+                    label="Email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                    required
+                ></wa-input>
+
+                <wa-input
+                    type="password"
+                    name="password"
+                    id="password"
+                    label="Password"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    minlength="6"
+                    password-toggle
+                    required
+                ></wa-input>
+
+                <p class="auth-aside">
+                    <button id="forgot-password" class="auth-link" type="button">
+                        Forgot password?
+                    </button>
+                </p>
+
+                <wa-button id="email-sign-in" variant="brand" type="button">
+                    Login
+                </wa-button>
+            </form>
+
+            <div class="auth-divider"><span>Or login with</span></div>
+
+            <wa-button id="google-sign-in" appearance="outlined" type="button">
+                Continue with Google
+            </wa-button>
+        </section>
+
+        <p id="auth-status" role="status" aria-live="polite"></p>
+
+        <section id="verification-view" data-view="verification" hidden>
+            <h2>Verify your email</h2>
+            <p>Check your inbox and open the verification link.</p>
+
+            <wa-button id="resend-verification" variant="brand" type="button">
+                Resend verification email
+            </wa-button>
+
+            <wa-button id="check-verification" appearance="plain" type="button">
+                I've verified my email
+            </wa-button>
+        </section>
+
+        <section id="link-view" data-view="link" hidden>
+            <h2>Finish signing in</h2>
+            <p>Confirm the email address your link was sent to.</p>
+
+            <wa-input
+                type="email"
+                id="link-email"
+                    label="Email"
+                placeholder="parent@example.com"
+                autocomplete="email"
+                required
+            ></wa-input>
+
+            <wa-button id="complete-link" variant="brand" type="button">
+                Continue
+            </wa-button>
+        </section>
+
+        <section id="password-view" data-view="password" hidden>
+            <h2>Set a password</h2>
+            <p>
+                Set a password so you can sign in any time without waiting for
+                another email. Already have one? Skip this step.
+            </p>
+
+            <wa-input
+                type="password"
+                id="new-password"
+                    label="Password"
+                placeholder="At least 6 characters"
+                autocomplete="new-password"
+                minlength="6"
+                password-toggle
+                required
+            ></wa-input>
+
+            <wa-button id="save-password" variant="brand" type="button">
+                Save password and continue
+            </wa-button>
+
+            <wa-button id="skip-password" appearance="plain" type="button">
+                Skip for now
+            </wa-button>
+        </section>
+
+        <p class="auth-switch" data-for-view="signin">
+            Don't have an account? <a href="signup.html">Register now</a>
+        </p>
+    </main>
+</body>
+</html>
