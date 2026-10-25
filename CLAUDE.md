@@ -1,5 +1,4 @@
-# Azfindroute
-
+# Bus Way
 Static site (no build step, no framework) for the Tempe Union bus system.
 Plain ES modules + Firebase Auth + Firestore, served as files.
 
@@ -27,18 +26,21 @@ domain, so it works as-is.
   after that date treat this as ready to revert and confirm with the user
   before removing it.
 - **Risk while active:** someone who guesses an invited parent's email address
-  can register it without proving they own it.
+  can register it without proving they own it. The local admin UI bypass also
+  lets any signed-in account pass the client-side verification gate if enabled;
+  keep `developmentAdminUiBypass` false outside local testing. Firestore rules
+  still require a trusted admin claim for site-wide invite management.
 - **Where:** two blocks, both marked `TEMPORARY (added 2026-10-25) - REVERT THIS`
   - [main.js](main.js) — in `onAuthStateChanged`: `resolveAccess` was moved
-    above the verification gate, and the gate gained
-    `&& access.role !== "parent"`. Reverting means putting the
+    above the verification gate, and the gate allows parent and admin roles
+    through without email verification. Reverting means putting the
     `if (!auth.currentUser.emailVerified)` check back *before* `resolveAccess`
-    and dropping the added condition.
+    and removing both role exceptions.
   - [auth-ui.js](auth-ui.js) — in `watchAuthState`, which both auth pages use:
-    the block that calls `resolveAccess` and sends a parent straight to the app.
-    Reverting means deleting that block so any unverified account shows the
-    verification view. (This lived in `signin.js` until the sign-in/sign-up
-    split moved the shared watcher into `auth-ui.js`.)
+    the block that calls `resolveAccess` and sends parents or admins straight
+    to the app. Reverting means deleting that block so any unverified account
+    shows the verification view. (This lived in `signin.js` until the
+    sign-in/sign-up split moved the shared watcher into `auth-ui.js`.)
 - **Not temporary, keep it:** the `try`/`catch` around `sendEmailVerification`
   in the create-account handler in [signup.js](signup.js). That is ordinary
   error handling — a mail failure is not a failed sign-up.
@@ -99,8 +101,9 @@ false if the page has no such step** — that is how an unverified visitor on
 
 `signup.html` asks, but the answer only picks which hint the form shows. Real
 authorization still comes from `resolveAccess()` in `access.js` — a district
-address is a student, anything else needs an invite document. Do not start
-trusting the answer for access decisions.
+address is a student, anything else needs an invite document, unless the
+account has the trusted `admin: true` claim. Do not start trusting the answer
+for access decisions.
 
 ### Web Awesome styles bare `<button>` elements
 
@@ -114,13 +117,19 @@ load Web Awesome, so its buttons are unaffected.
 
 - `auth.js` — Firebase app/auth/Firestore, school email domain list, and the
   `enforceSchoolEmail` flag.
-- `access.js` — `resolveAccess()` returns student / parent / denied. Parent
+- `access.js` — `resolveAccess()` returns student / parent / admin / denied. Parent
   access is a Firestore `parentInvites` document (id `<studentUid>__<email>`),
-  not the invite email, so it is permanent and revocable.
+  not the invite email, so it is permanent and revocable. Admin access comes
+  only from the trusted Firebase Auth custom claim `admin: true`.
 - `parents.js` — the student's "Parent access" dialog.
 - `sign-in-link.js` — sends Firebase email sign-in links.
 - `firestore.rules` — students manage only their own invites; a parent may only
-  mark their own invite active.
+  mark their own invite active; admins may view and revoke invites across
+  students.
+
+Admins use the existing sign-in page and map. Grant the `admin: true` custom
+claim only with Firebase Admin SDK in a trusted environment, never in this
+static client. Publish `firestore.rules` after changing it.
 
 `enforceSchoolEmail` in `auth.js` is **false**: every signed-in address counts
 as a student so test accounts keep working. Turning it on also needs the real

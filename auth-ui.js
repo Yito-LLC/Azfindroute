@@ -205,8 +205,9 @@ export function watchAuthState(defaultView, isMidFlow = () => false) {
             // ---------------------------------------------------------------
             // TEMPORARY (added 2026-10-25) - REVERT THIS
             //
-            // Matches the bypass in main.js: an invited parent reaches the map
-            // without a verified email while the Firebase email quota is spent.
+            // Invited parents and explicitly authorized admins can reach the
+            // map without a verified email while the Firebase email quota is
+            // spent or the admin UI is being tested.
             //
             // TO REVERT: delete this block, so an unverified account always
             // lands on the verification view. See "Active temporary changes"
@@ -214,7 +215,7 @@ export function watchAuthState(defaultView, isMidFlow = () => false) {
             // ---------------------------------------------------------------
             const access = await resolveAccess(auth.currentUser);
 
-            if (access.role === "parent") {
+            if (access.role === "parent" || access.role === "admin") {
                 goToApp();
                 return;
             }

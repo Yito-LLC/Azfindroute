@@ -1,4 +1,4 @@
-# Az Find Route.com
+# Busway.com
 Repository to help with the Tempe Union Bus System.
 
 ## Pages
@@ -25,7 +25,7 @@ Repository to help with the Tempe Union Bus System.
 - `auth.js` — shared Firebase app, auth and Firestore instances, plus the
   school email domain list.
 - `access.js` — works out whether an account may use the site and as what
-  (student or invited parent), and stores the parent invites.
+  (student, invited parent, or admin), and stores the parent invites.
 - `parents.js` — the "Parent access" dialog students use to add their parents.
 - `sign-in-link.js` — sends the email sign-in links used by invites.
 - `firestore.rules` — security rules for the parent invites.
@@ -79,6 +79,46 @@ Set `schoolEmailDomains` to the district's real domains, flip the flag to
 `true`, then uncomment the matching `isSchoolEmail()` check in
 `firestore.rules`.
 
+### Admin access
+
+Admins use the regular sign-in page and the existing Firebase Authentication
+account. Access is granted only when the account's ID token contains the
+trusted custom claim `admin: true`; an email address or client-side setting is
+not sufficient. Admins can use the map and review, resend pending, or revoke
+parent invites across all students. They cannot create invites on behalf of a
+student.
+
+For local UI testing only, `developmentAdminUiBypass` in `access.js` can be
+set to `true`. This treats every signed-in account as an admin in the client
+and lets it through the email-verification screen, so never enable it in
+deployed code. Firestore still enforces the custom claim: without it, site-wide
+invite listing and revocation will be denied.
+
+Assign the claim only from a trusted environment with Firebase Admin SDK
+credentials, after creating the account in Firebase Authentication. Never put
+Admin SDK credentials or claim-setting code in this static site. Preserve any
+existing custom claims when setting it:
+
+```js
+import { initializeApp, applicationDefault } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+
+initializeApp({ credential: applicationDefault() });
+
+const adminAuth = getAuth();
+const user = await adminAuth.getUser(uid);
+await adminAuth.setCustomUserClaims(uid, {
+  ...user.customClaims,
+  admin: true
+});
+```
+
+Remove the `admin` property from the claims to revoke admin access. Have the
+user sign out and back in (or refresh their ID token) for claim changes to take
+effect. Publish the updated Firestore rules with
+`firebase deploy --only firestore:rules`; until then, admin invite management
+will be denied by Firestore.
+
 ### Firebase setup this needs
 
 - Firestore enabled, with `firestore.rules` deployed
@@ -92,8 +132,11 @@ Set `schoolEmailDomains` to the district's real domains, flip the flag to
 ## Map
 
 The map is powered by Mapbox GL JS and opens in 3D. Use the map control to switch
-between 3D and 2D. Enter an address and press Enter to geocode it and place a pin
-on the map, zooming in to street level.
+between 3D and 2D. Enter an address and choose a school to pin the nearest
+mapped stop associated with that school and draw the fastest available walking
+route from that stop to the address. The map reports the route distance and
+estimated walking time; a separate pin marks the address. Walking routes
+require the Mapbox Directions API to be enabled for the access token.
 
 If you zoom out below level 5, the map recenters on your most recently searched
 address, or on Arizona if you have not searched for an address yet.

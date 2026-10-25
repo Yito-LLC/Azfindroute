@@ -231,4 +231,30 @@ export function schoolSummary() {
     }));
 }
 
+export function nearestBusStop(schoolName, coordinates) {
+    const [longitude, latitude] = coordinates;
+    const latitudeRadians = latitude * Math.PI / 180;
+    const candidates = locatedStops.filter(stop => stop.school === schoolName);
+
+    if (!candidates.length) return null;
+
+    return candidates.reduce((nearest, stop) => {
+        const stopLatitudeRadians = stop.lat * Math.PI / 180;
+        const latitudeDelta = stopLatitudeRadians - latitudeRadians;
+        const longitudeDelta = (stop.lon - longitude) * Math.PI / 180;
+        const haversine = Math.sin(latitudeDelta / 2) ** 2 +
+            Math.cos(latitudeRadians) * Math.cos(stopLatitudeRadians) *
+            Math.sin(longitudeDelta / 2) ** 2;
+        const distanceMeters = 6371000 * 2 *
+            Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+
+        return distanceMeters < nearest.distanceMeters
+            ? { stop, distanceMeters }
+            : nearest;
+    }, {
+        stop: candidates[0],
+        distanceMeters: Infinity
+    });
+}
+
 export { locatedStops, unlocatedStops };

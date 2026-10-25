@@ -18,6 +18,10 @@ import {
     normalizeEmail
 } from "./auth.js";
 
+// Development-only UI bypass. Keep false outside local testing; Firestore
+// still requires the trusted admin custom claim for site-wide invite access.
+const developmentAdminUiBypass = true;
+
 // One document per student/parent pair, so siblings can each invite the same
 // parent and either of them can revoke only their own invite.
 const parentInvites = collection(db, "parentInvites");
@@ -34,6 +38,12 @@ export async function invitesForStudent(studentUid) {
     const snapshot = await getDocs(
         query(parentInvites, where("studentUid", "==", studentUid))
     );
+
+    return snapshot.docs.map(toInvite);
+}
+
+export async function invitesForAdmin() {
+    const snapshot = await getDocs(parentInvites);
 
     return snapshot.docs.map(toInvite);
 }
@@ -103,10 +113,21 @@ export async function claimParentInvites(user, invites) {
 /**
  * Works out whether a signed-in account may use the app and as what.
  *
+ * - a trusted Firebase Auth admin claim grants admin access
  * - a district address is a student
  * - anything else needs a parent invite from a student
  */
 export async function resolveAccess(user) {
+    if (developmentAdminUiBypass) {
+        return { allowed: true, role: "admin", invites: [] };
+    }
+
+    const token = await user.getIdTokenResult();
+
+    if (token.claims.admin === true) {
+        return { allowed: true, role: "admin", invites: [] };
+    }
+
     const email = normalizeEmail(user.email);
 
     if (isSchoolEmail(email)) {

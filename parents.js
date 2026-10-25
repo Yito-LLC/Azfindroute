@@ -1,6 +1,7 @@
 import { normalizeEmail } from "./auth.js";
 import {
     addParentInvite,
+    invitesForAdmin,
     invitesForStudent,
     removeParentInvite
 } from "./access.js";
@@ -17,6 +18,7 @@ const parentList = document.getElementById("parent-list");
 let student = null;
 let invites = [];
 let busy = false;
+let adminMode = false;
 
 function showMessage(message) {
     parentStatus.textContent = message;
@@ -43,9 +45,8 @@ function describeInviteFailure(error) {
         case "auth/invalid-email":
             return "That email address does not look right.";
         case "permission-denied":
-            return "Firestore refused the invite. Either firestore.rules has " +
-                "not been published yet, or your own email is not verified - " +
-                "the rules require a verified student before inviting.";
+            return "Firestore refused this action. Check that firestore.rules " +
+                "has been published and that your account has permission.";
         case "unavailable":
         case "failed-precondition":
             return "Could not reach Firestore. Check that Firestore is " +
@@ -69,7 +70,14 @@ function formatDate(timestamp) {
 
 function inviteRow(invite) {
     const item = document.createElement("li");
-    item.className = "parent-row";
+    item.className = adminMode ? "parent-row is-admin-row" : "parent-row";
+
+    if (adminMode) {
+        const studentEmail = document.createElement("span");
+        studentEmail.className = "parent-row-student";
+        studentEmail.textContent = invite.studentEmail || "Unknown student";
+        item.append(studentEmail);
+    }
 
     const email = document.createElement("span");
     email.className = "parent-row-email";
@@ -152,14 +160,22 @@ function renderInvites() {
     if (!invites.length) {
         const empty = document.createElement("li");
         empty.className = "parent-row is-empty";
-        empty.textContent = "No parents added yet.";
+        empty.textContent = adminMode
+            ? "No parent invites found."
+            : "No parents added yet.";
         parentList.append(empty);
         return;
     }
 
-    const sorted = [...invites].sort((a, b) =>
-        a.parentEmail.localeCompare(b.parentEmail)
-    );
+    const sorted = [...invites].sort((a, b) => {
+        if (adminMode) {
+            const studentOrder = (a.studentEmail || "").localeCompare(b.studentEmail || "");
+
+            if (studentOrder) return studentOrder;
+        }
+
+        return a.parentEmail.localeCompare(b.parentEmail);
+    });
 
     for (const invite of sorted) {
         parentList.append(inviteRow(invite));
@@ -167,7 +183,10 @@ function renderInvites() {
 }
 
 async function refresh() {
-    invites = await invitesForStudent(student.uid);
+    invites = adminMode
+        ? await invitesForAdmin()
+        : await invitesForStudent(student.uid);
+
     renderInvites();
 }
 
@@ -177,6 +196,8 @@ parentForm.addEventListener("submit", async event => {
     if (busy) return;
 
     const email = normalizeEmail(parentInput.value);
+
+    if (adminMode) return;
 
     if (!email) {
         showMessage("Enter your parent's email address.");
@@ -227,7 +248,11 @@ openButton.addEventListener("click", async () => {
         await refresh();
     } catch (error) {
         console.error(error);
-        showMessage("Could not load your parents. Please try again.");
+        showMessage(
+            adminMode
+                ? "Could not load parent invites. Please try again."
+                : "Could not load your parents. Please try again."
+        );
     }
 });
 
@@ -235,7 +260,15 @@ closeButton.addEventListener("click", () => {
     dialog.close();
 });
 
-export function initParentManager(user) {
+export function initParentManager(user, role = "student") {
     student = user;
+    adminMode = role === "admin";
+    document.getElementById("parents-title").textContent = adminMode
+        ? "Parent invites"
+        : "Parent access";
+    document.getElementById("parents-hint").textContent = adminMode
+        ? "Review invites across all students, resend pending invitations, or revoke access."
+        : "Parents do not have a school email, so add them here. They get an invite email with a sign-in link, and once they open it they can set a password and sign in whenever they like.";
+    parentForm.hidden = adminMode;
     openButton.hidden = false;
 }

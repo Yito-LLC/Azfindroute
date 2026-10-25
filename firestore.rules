@@ -6,7 +6,7 @@ rules_version = '2';
 // parentInvites holds one document per student/parent pair, with the id
 // "<studentUid>__<parent email>". The document is the parent's permanent key to
 // the site: as long as it exists the parent may sign in, and the student who
-// created it can revoke it at any time.
+// created it or an admin with the trusted `admin: true` claim can revoke it.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -14,6 +14,10 @@ service cloud.firestore {
 
       function signedIn() {
         return request.auth != null && request.auth.token.email != null;
+      }
+
+      function isAdmin() {
+        return signedIn() && request.auth.token.admin == true;
       }
 
       function callerEmail() {
@@ -35,10 +39,10 @@ service cloud.firestore {
       // checking whether they already invited someone hits exactly that case,
       // so denying it breaks adding a parent before the create rule is ever
       // reached. Do not fold this back into a single `allow read`.
-      allow get: if signedIn() && (resource == null || mine());
+      allow get: if signedIn() && (resource == null || isAdmin() || mine());
 
-      // the student sees the parents they added, the parent sees their own invite
-      allow list: if signedIn() && mine();
+      // Students and parents see their own invites; admins can view them all.
+      allow list: if signedIn() && (isAdmin() || mine());
 
       // ---------------------------------------------------------------
       // TEMPORARY (added 2026-10-25) - REVERT THIS
@@ -58,7 +62,8 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
 
       // only the student who invited the parent can take the access away
-      allow delete: if signedIn() && request.auth.uid == resource.data.studentUid;
+      allow delete: if signedIn()
+        && (isAdmin() || request.auth.uid == resource.data.studentUid);
 
       // the invited parent marks their own invite as used on first sign-in and
       // may not touch anything else about it

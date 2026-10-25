@@ -60,7 +60,7 @@
                         <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
                             <path d="M12 3 2.5 11h2.7v9h5.2v-5.8h3.2V20h5.2v-9h2.7L12 3z"></path>
                         </svg>
-                        <input class="search-input" type="text" name="address" id="address" placeholder="Enter Your Address Here" autocomplete="address-line1" required>
+                        <input class="search-input" type="text" name="address" id="address" placeholder="Enter your address" autocomplete="address-line1" required>
                         <button class="search-submit" type="submit" aria-label="Search address">
                             <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
                                 <circle cx="10.8" cy="10.8" r="6.3"></circle>
@@ -70,13 +70,21 @@
                     </div>
                 </form>
 
+                <div class="school-select-wrap">
+                    <label for="school-select">Your school</label>
+                    <select id="school-select" name="school">
+                        <option value="">Select your school</option>
+                    </select>
+                </div>
+
                 <p id="map-status" class="map-status" role="status" aria-live="polite"></p>
 
                 <section class="stop-legend">
                     <h2>Bus stops by school</h2>
                     <div id="school-filters" class="school-filters"></div>
                     <p class="stop-legend-hint">
-                        Click a dot for its routes and times. Large dots are the schools.
+                        Enter your address and choose a school to pin its nearest
+                        bus stop. Click any dot for routes and times.
                     </p>
                 </section>
             </div>
@@ -106,11 +114,11 @@
 
     <dialog id="parents-dialog" class="parents-dialog">
         <div class="dialog-header">
-            <h2>Parent access</h2>
+            <h2 id="parents-title">Parent access</h2>
             <button id="parents-close" class="dialog-close" type="button" aria-label="Close">&times;</button>
         </div>
 
-        <p class="dialog-hint">
+        <p id="parents-hint" class="dialog-hint">
             Parents do not have a school email, so add them here. They get an
             invite email with a sign-in link, and once they open it they can set
             a password and sign in whenever they like.
