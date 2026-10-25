@@ -58,16 +58,6 @@ let mapInitialized = false;
 let mapInitializing = false;
 let lastAddressCenter;
 
-map.on('zoomend', () => {
-    if (map.getZoom() < minimumFocusZoom) {
-        map.easeTo({
-            center: lastAddressCenter || arizonaCenter,
-            zoom: minimumFocusZoom,
-            duration: 700
-        });
-    }
-});
-
 const addressForm = document.getElementById('address-form');
 const addressInput = document.getElementById('address');
 const mapStatus = document.getElementById('map-status');
@@ -131,6 +121,16 @@ async function initializeMap() {
         });
 
         map.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+        map.on('zoomend', () => {
+            if (map.getZoom() < minimumFocusZoom) {
+                map.easeTo({
+                    center: lastAddressCenter || arizonaCenter,
+                    zoom: minimumFocusZoom,
+                    duration: 700
+                });
+            }
+        });
 
         const addressForm = document.getElementById("address-form");
         const addressInput = document.getElementById("address");
