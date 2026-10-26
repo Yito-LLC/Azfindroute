@@ -105,28 +105,25 @@
                     </div>
                 </form>
 
-                <section id="driver-panel" class="driver-panel" hidden>
-                    <h2>Drive a route</h2>
+                <section id="stop-status-panel" class="driver-panel" hidden>
+                    <h2>Bus status by stop</h2>
 
                     <div class="school-select-wrap">
-                        <label for="driver-school">School</label>
-                        <select id="driver-school"></select>
+                        <label for="stop-status-school">School</label>
+                        <select id="stop-status-school"></select>
                     </div>
 
                     <div class="school-select-wrap">
-                        <label for="driver-route">Route</label>
-                        <select id="driver-route" disabled></select>
+                        <label for="stop-status-route">Route</label>
+                        <select id="stop-status-route" disabled></select>
                     </div>
 
-                    <button id="driver-toggle" class="driver-toggle" type="button" disabled>
-                        Start sharing location
-                    </button>
-
-                    <p id="driver-status" class="map-status" role="status" aria-live="polite"></p>
-
+                    <div id="stop-status-list" class="stop-status-list"></div>
+                    <p id="stop-status-message" class="stop-legend-hint"
+                       role="status" aria-live="polite"></p>
                     <p class="stop-legend-hint">
-                        Keep this page open while you drive. Your bus shows on
-                        the map only while sharing is on.
+                        Choose On time or Late for each stop. Everyone can see
+                        the saved status in that stop’s map card.
                     </p>
                 </section>
 

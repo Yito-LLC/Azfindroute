@@ -27,6 +27,8 @@ const staleAfterMs = 2 * 60 * 1000;
 // sends one every heartbeat so it does not go stale at a long red light.
 const minimumWriteIntervalMs = 5 * 1000;
 const heartbeatMs = 30 * 1000;
+const maximumAccuracyMeters = 100;
+const maximumSpeedMetersPerSecond = 45;
 
 const lastChoiceKey = "busway:driver-route";
 
@@ -79,6 +81,19 @@ function describeGeolocationError(error) {
     }
 }
 
+function distanceBetween(first, second) {
+    const radians = degrees => degrees * Math.PI / 180;
+    const latitudeDelta = radians(second.latitude - first.latitude);
+    const longitudeDelta = radians(second.longitude - first.longitude);
+    const latitude1 = radians(first.latitude);
+    const latitude2 = radians(second.latitude);
+    const haversine = Math.sin(latitudeDelta / 2) ** 2 +
+        Math.cos(latitude1) * Math.cos(latitude2) *
+        Math.sin(longitudeDelta / 2) ** 2;
+
+    return 6371000 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
 /**
  * The "Drive a route" panel, shown only to bus drivers.
  */
@@ -96,6 +111,30 @@ export function initDriverPanel(user) {
     let lastPosition = null;
     let lastWriteAt = 0;
     let writing = false;
+
+    function acceptPosition(position) {
+        const { accuracy, latitude, longitude } = position.coords;
+
+        if (!Number.isFinite(accuracy) || accuracy > maximumAccuracyMeters) {
+            setStatus("GPS accuracy is low; waiting for a better location fix.", "loading");
+            return false;
+        }
+
+        if (lastPosition) {
+            const previous = lastPosition.coords;
+            const elapsedSeconds = Math.max(0, (position.timestamp - lastPosition.timestamp) / 1000);
+            const maximumDistance = maximumSpeedMetersPerSecond * elapsedSeconds +
+                previous.accuracy + accuracy;
+
+            if (distanceBetween(previous, { latitude, longitude }) > maximumDistance) {
+                setStatus("Ignoring a sudden GPS jump; waiting for a reliable location fix.", "loading");
+                return false;
+            }
+        }
+
+        lastPosition = position;
+        return true;
+    }
 
     function setStatus(message, tone = "info") {
         status.textContent = message;
@@ -125,6 +164,10 @@ export function initDriverPanel(user) {
 
     async function send(force = false) {
         if (!lastPosition || writing) return;
+        if (Date.now() - lastPosition.timestamp > staleAfterMs) {
+            setStatus("GPS signal lost; waiting for a new location fix.", "error");
+            return;
+        }
         if (!force && Date.now() - lastWriteAt < minimumWriteIntervalMs) return;
 
         const { longitude, latitude, heading } = lastPosition.coords;
@@ -181,18 +224,40 @@ export function initDriverPanel(user) {
             return;
         }
 
-        if (!window.isSecureContext) {
-            setStatus("Location only works over https (or on localhost).", "error");
+        const localOrigin = /^(https?:\/\/)(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
+        if (!window.isSecureContext && !localOrigin.test(window.location.origin)) {
+            setStatus("Location sharing needs a secure page. Open this site over http://127.0.0.1:5501.", "error");
             return;
         }
 
         saveLastChoice({ school: schoolSelect.value, route: routeSelect.value });
         setStatus("Finding your location…", "loading");
 
-        watchId = navigator.geolocation.watchPosition(
+        navigator.geolocation.getCurrentPosition(
             position => {
-                lastPosition = position;
-                send();
+                if (acceptPosition(position)) send(true);
+
+                watchId = navigator.geolocation.watchPosition(
+                    nextPosition => {
+                        if (acceptPosition(nextPosition)) send();
+                    },
+                    error => {
+                        console.error(error);
+                        setStatus(describeGeolocationError(error), "error");
+
+                        if (error.code === error.PERMISSION_DENIED) stop();
+                    },
+                    { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
+                );
+
+                if (watchId === null) {
+                    setStatus("This browser could not start location tracking.", "error");
+                    return;
+                }
+
+                heartbeatTimer = setInterval(() => send(true), heartbeatMs);
+                holdWakeLock();
+                updateToggle();
             },
             error => {
                 console.error(error);
@@ -202,10 +267,6 @@ export function initDriverPanel(user) {
             },
             { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
         );
-
-        heartbeatTimer = setInterval(() => send(true), heartbeatMs);
-        holdWakeLock();
-        updateToggle();
     }
 
     async function stop({ quiet = false } = {}) {

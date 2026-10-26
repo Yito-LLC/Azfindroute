@@ -16,7 +16,8 @@ import {
 
 import { initParentManager } from "./parents.js";
 import { initDriverManager } from "./drivers.js";
-import { initDriverPanel, watchLiveBuses } from "./live-buses.js";
+import { watchLiveBuses } from "./live-buses.js";
+import { initStopStatusManager, watchStopStatuses } from "./stop-statuses.js";
 
 import {
     addBusStopLayers,
@@ -625,6 +626,7 @@ async function initializeMap() {
         map.on("resize", constrainMapToArea);
 
         map.on("load", () => {
+            watchStopStatuses();
             const firstSymbolLayer = map.getStyle().layers.find(
                 layer => layer.type === "symbol"
             );
@@ -857,6 +859,7 @@ onAuthStateChanged(auth, async user => {
             return;
         }
 
+        addressForm.hidden = access.role === "driver";
         showAccount(auth.currentUser, access.role);
         if (demoMode) showDemoRolePicker(auth.currentUser, access);
 
@@ -866,8 +869,9 @@ onAuthStateChanged(auth, async user => {
         } else if (access.role === "admin") {
             initParentManager(auth.currentUser, access.role);
             initDriverManager(auth.currentUser);
+            initStopStatusManager();
         } else if (access.role === "driver") {
-            initDriverPanel(auth.currentUser);
+            initStopStatusManager();
         } else {
             initParentManager(auth.currentUser);
         }

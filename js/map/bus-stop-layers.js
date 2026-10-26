@@ -1,4 +1,5 @@
 import { schools, busStops } from "./bus-stops.js";
+import { getStopStatus } from "./stop-statuses.js";
 
 const stopSourceId = "bus-stops";
 const stopLayerId = "bus-stop-circles";
@@ -84,13 +85,21 @@ function directionsHtml([longitude, latitude]) {
 // nearest-stop marker, so both look the same. `nearestNote` adds the
 // distance line only the nearest-stop marker shows.
 export function stopPopupHtml(stop, { nearestNote = "" } = {}) {
-    const rows = stop.runs.map(run => `
-        <tr>
-            <th scope="row">${escapeHtml(run.route ?? "—")}</th>
-            <td>${escapeHtml(run.am ?? "—")}</td>
-            <td>${escapeHtml(run.pm ?? "—")}</td>
-        </tr>
-    `).join("");
+    const rows = stop.runs.map(run => {
+        const status = getStopStatus(stop.school, run.route, stop.name);
+        const statusLabel = status === "on-time"
+            ? "On time"
+            : status === "late" ? "Late" : "Not set";
+
+        return `
+            <tr>
+                <th scope="row">${escapeHtml(run.route ?? "—")}</th>
+                <td>${escapeHtml(run.am ?? "—")}</td>
+                <td>${escapeHtml(run.pm ?? "—")}</td>
+                <td class="stop-status-value ${status}">${statusLabel}</td>
+            </tr>
+        `;
+    }).join("");
 
     return `
         <div class="stop-popup">
@@ -108,7 +117,7 @@ export function stopPopupHtml(stop, { nearestNote = "" } = {}) {
             ${stop.program ? `<p class="stop-popup-program">${escapeHtml(stop.program)}</p>` : ""}
             <table>
                 <thead>
-                    <tr><th scope="col">Route</th><th scope="col">AM leaves</th><th scope="col">PM arrives</th></tr>
+                    <tr><th scope="col">Route</th><th scope="col">AM leaves</th><th scope="col">PM arrives</th><th scope="col">Status</th></tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>

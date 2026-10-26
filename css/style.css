@@ -660,6 +660,19 @@ input {
     font-weight: 600;
 }
 
+.stop-popup .stop-status-value {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.stop-status-value.on-time {
+    color: #236b35;
+}
+
+.stop-status-value.late {
+    color: #b3261e;
+}
+
 .stop-popup tbody th {
     font-weight: 600;
     white-space: nowrap;
@@ -1304,6 +1317,30 @@ input {
 .driver-toggle:focus-visible {
     outline: 2px solid #666;
     outline-offset: 2px;
+}
+
+.stop-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stop-status-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.stop-status-row select {
+    min-height: 36px;
+    padding: 5px 28px 5px 8px;
+    border: 1px solid #c7cdd5;
+    border-radius: 6px;
+    background: #fff;
+    color: #263445;
+    font: inherit;
 }
 
 .bus-marker {

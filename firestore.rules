@@ -142,6 +142,31 @@ service cloud.firestore {
       allow delete: if signedIn() && (request.auth.uid == driverUid || isAdmin());
     }
 
+    match /busStopStatuses/{statusId} {
+      function canManageStatuses() {
+        return isAdmin() || (signedIn() && (
+          (request.auth.token.email_verified == true
+            && exists(/databases/$(database)/documents/busDrivers/$(callerEmail())))
+          || (demoMode() && demoRole() == 'driver')
+        ));
+      }
+
+      function validStatus() {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['school', 'route', 'stopName', 'status', 'updatedAt'])
+          && data.school in ['Corona del Sol', 'Desert Vista', 'Marcos de Niza',
+                             'McClintock', 'Mountain Pointe', 'Tempe High']
+          && data.route is string && data.route.size() > 0 && data.route.size() <= 40
+          && data.stopName is string && data.stopName.size() > 0 && data.stopName.size() <= 160
+          && data.status in ['on-time', 'late']
+          && data.updatedAt == request.time;
+      }
+
+      allow read: if signedIn();
+      allow create, update: if canManageStatuses() && validStatus();
+      allow delete: if canManageStatuses();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
