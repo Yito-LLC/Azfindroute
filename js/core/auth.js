@@ -30,6 +30,16 @@ export const schoolEmailDomains = ["tuhsd.k12.az.us"];
 // accounts keep working, but parent invites are already stored and honored.
 export const enforceSchoolEmail = false;
 
+// ---------------------------------------------------------------
+// TEMPORARY DEMO MODE - turn off after judging
+//
+// While true, the role picked at sign-up (student, parent or bus driver) is
+// honored as-is, email verification is skipped, and the account menu lets
+// anyone switch role. Turn it off here AND in demoMode() in firestore.rules
+// (then publish the rules). See "Active temporary changes" in CLAUDE.md.
+// ---------------------------------------------------------------
+export const demoMode = true;
+
 export function normalizeEmail(email) {
     return (email || "").trim().toLowerCase();
 }

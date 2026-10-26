@@ -45,16 +45,34 @@
                      alt="Busway" width="540" height="270">
             </h1>
 
-            <div class="account">
-                <span id="account-email" class="account-email"></span>
-                <span id="account-role" class="account-role" hidden></span>
-                <button id="manage-parents" type="button" hidden>Parent access</button>
-                <button id="sign-out" type="button">Sign out</button>
-            </div>
+            <details id="account-menu" class="account account-menu">
+                <summary aria-label="Account">
+                    <span id="account-email" class="account-email"></span>
+                    <span id="account-role" class="account-role" hidden></span>
+                </summary>
+                <div class="account-panel">
+                    <button id="manage-parents" type="button" hidden>Parent access</button>
+                    <button id="manage-drivers" type="button" hidden>Bus drivers</button>
+                    <label id="demo-role-wrap" class="demo-role" hidden>
+                        Demo: view as
+                        <select id="demo-role">
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                            <option value="driver">Bus driver</option>
+                            <option value="">My real role</option>
+                        </select>
+                    </label>
+                    <button id="sign-out" type="button">Sign out</button>
+                </div>
+            </details>
         </header>
 
         <div class="app-layout">
-            <div class="search-panel">
+            <div id="sidebar" class="search-panel">
+                <button id="sheet-toggle" class="sheet-toggle" type="button"
+                        aria-controls="sidebar" aria-expanded="true"
+                        aria-label="Hide panel"></button>
+
                 <form id="address-form">
                     <div class="address-autocomplete">
                         <div class="search">
@@ -86,6 +104,31 @@
                             role="listbox" aria-label="Address suggestions" hidden></ul>
                     </div>
                 </form>
+
+                <section id="driver-panel" class="driver-panel" hidden>
+                    <h2>Drive a route</h2>
+
+                    <div class="school-select-wrap">
+                        <label for="driver-school">School</label>
+                        <select id="driver-school"></select>
+                    </div>
+
+                    <div class="school-select-wrap">
+                        <label for="driver-route">Route</label>
+                        <select id="driver-route" disabled></select>
+                    </div>
+
+                    <button id="driver-toggle" class="driver-toggle" type="button" disabled>
+                        Start sharing location
+                    </button>
+
+                    <p id="driver-status" class="map-status" role="status" aria-live="polite"></p>
+
+                    <p class="stop-legend-hint">
+                        Keep this page open while you drive. Your bus shows on
+                        the map only while sharing is on.
+                    </p>
+                </section>
 
                 <div class="school-select-wrap">
                     <label for="school-select">Your school</label>
@@ -123,6 +166,14 @@
                             <span class="switch-option switch-option-3d">3D</span>
                         </span>
                     </button>
+
+                    <button id="map-recenter" class="map-recenter" type="button" disabled>
+                        Show all stops
+                    </button>
+                </div>
+
+                <div id="map-loading" class="map-loading">
+                    <p id="map-loading-text">Loading the map…</p>
                 </div>
 
                 <div id="map" aria-label="Interactive map of Phoenix, Arizona"></div>
@@ -158,6 +209,35 @@
         <p id="parent-status" class="dialog-status" role="status" aria-live="polite"></p>
 
         <ul id="parent-list" class="parent-list"></ul>
+    </dialog>
+
+    <dialog id="drivers-dialog" class="parents-dialog">
+        <div class="dialog-header">
+            <h2>Bus drivers</h2>
+            <button id="drivers-close" class="dialog-close" type="button" aria-label="Close">&times;</button>
+        </div>
+
+        <p class="dialog-hint">
+            Add a driver's email to let that account share its bus location on
+            the map. Remove it to take that away.
+        </p>
+
+        <form id="driver-form" class="parent-form">
+            <label class="visually-hidden" for="driver-email">Driver email</label>
+            <input
+                id="driver-email"
+                name="driverEmail"
+                type="email"
+                placeholder="driver@example.com"
+                autocomplete="off"
+                required
+            >
+            <button type="submit">Add driver</button>
+        </form>
+
+        <p id="driver-list-status" class="dialog-status" role="status" aria-live="polite"></p>
+
+        <ul id="driver-list" class="parent-list"></ul>
     </dialog>
 
     <footer class="site-footer">

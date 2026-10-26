@@ -73,6 +73,22 @@ Sending your sign-in link...|正在发送登录链接…|Enviando el enlace para
 The map failed to load. Refresh the page and try again.|地图加载失败。请刷新页面后重试。|No se pudo cargar el mapa. Actualiza la página e inténtalo de nuevo.
 Unable to sign out. Please try again.|无法退出登录，请重试。|No se pudo cerrar la sesión. Inténtalo de nuevo.
 That email address does not look right.|此邮箱地址似乎无效。|Ese correo electrónico no parece válido.
+Drive a route|驾驶路线|Conducir una ruta
+School|学校|Escuela
+Route|路线|Ruta
+Select your route|选择您的路线|Selecciona tu ruta
+Start sharing location|开始共享位置|Empezar a compartir ubicación
+Stop sharing location|停止共享位置|Dejar de compartir ubicación
+Keep this page open while you drive. Your bus shows on the map only while sharing is on.|驾驶时请保持此页面打开。只有在共享开启时，您的校车才会显示在地图上。|Mantén esta página abierta mientras conduces. Tu autobús aparece en el mapa solo mientras compartes la ubicación.
+Bus drivers|校车司机|Conductores de autobús
+Bus driver|校车司机|Conductor de autobús
+Add a driver's email to let that account share its bus location on the map. Remove it to take that away.|添加司机的邮箱，即可让该账户在地图上共享校车位置。删除后将取消此权限。|Agrega el correo de un conductor para que esa cuenta comparta la ubicación de su autobús en el mapa. Elimínalo para quitar ese permiso.
+Driver email|司机邮箱|Correo del conductor
+Add driver|添加司机|Agregar conductor
+Demo: view as|演示：切换身份|Demo: ver como
+My real role|我的真实身份|Mi rol real
+I'm a bus driver|我是校车司机|Soy conductor de autobús
+The district adds your email first, then you sign up with that address.|学区会先添加您的邮箱，然后您使用该邮箱注册。|El distrito agrega tu correo primero y luego te registras con esa dirección.
 Firestore refused this action. Check that firestore.rules has been published and that your account has permission.|Firestore 拒绝了此操作。请确认 firestore.rules 已发布且您的账户有权限。|Firestore rechazó esta acción. Comprueba que firestore.rules esté publicado y que tu cuenta tenga permiso.
 Could not reach Firestore. Check that Firestore is enabled for this Firebase project.|无法连接 Firestore。请确认此 Firebase 项目已启用 Firestore。|No se pudo conectar con Firestore. Comprueba que esté habilitado en este proyecto de Firebase.
 Opening Google sign-in...|正在打开 Google 登录…|Abriendo el inicio de sesión de Google…

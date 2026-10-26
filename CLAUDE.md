@@ -65,6 +65,24 @@ domain, so it works as-is.
   the existence check in `addParentInvite()` and broke adding a parent
   entirely. Folding those two back together reintroduces that bug.
 
+### 3. Demo mode — anyone picks their own role
+
+- **Added:** 2026-10-25
+- **Why:** judges need to try the student, parent and bus driver views
+  without an admin adding them or an invite from a student.
+- **Revert when:** judging is over — confirm with the user first.
+- **What it does:** the role picked on `signup.html` is saved to
+  `demoRoles/<uid>` and wins in `resolveAccess()`; email verification is
+  skipped everywhere (and no verification mail is sent on sign-up); the
+  account menu has a "Demo: view as" picker; a `driver` demo role may write
+  `busLocations` without a verified email or `busDrivers` document.
+- **Risk while active:** anyone can put a bus on the map, and unverified
+  accounts get in.
+- **How to revert:** set `demoMode = false` in [js/core/auth.js](js/core/auth.js)
+  and make `demoMode()` return `false` in [firestore.rules](firestore.rules),
+  then publish the rules. Every demo branch keys off those two flags, so the
+  code can stay; delete the `demoRoles` collection afterwards.
+
 ## Layout
 
 The HTML pages stay at the top level on purpose: invite and sign-in emails
@@ -75,8 +93,8 @@ against the current page's URL. Everything else is grouped:
   `sign-in-link.js`, `i18n.js`.
 - `js/auth/` — the auth pages: `auth-ui.js`, `welcome.js`, `signin.js`,
   `signup.js`.
-- `js/map/` — the map app: `main.js`, `parents.js`, `bus-stop-layers.js` and
-  the stop data in `bus-stops.js`.
+- `js/map/` — the map app: `main.js`, `parents.js`, `drivers.js`,
+  `live-buses.js`, `bus-stop-layers.js` and the stop data in `bus-stops.js`.
 - `css/style.css` — the one stylesheet, shared by every page.
 - `assets/busway-logo.png` — the wordmark.
 
@@ -134,11 +152,19 @@ load Web Awesome, so its buttons are unaffected.
 
 - `auth.js` — Firebase app/auth/Firestore, school email domain list, and the
   `enforceSchoolEmail` flag.
-- `access.js` — `resolveAccess()` returns student / parent / admin / denied. Parent
+- `access.js` — `resolveAccess()` returns student / parent / driver / admin /
+  denied. A bus driver is an account with a `busDrivers/<email>` document,
+  which only an admin can create (the "Bus drivers" dialog, `drivers.js`). Parent
   access is a Firestore `parentInvites` document (id `<studentUid>__<email>`),
   not the invite email, so it is permanent and revocable. Admin access comes
   only from the trusted Firebase Auth custom claim `admin: true`.
 - `parents.js` — the student's "Parent access" dialog.
+- `live-buses.js` — the driver's "Drive a route" panel (school + route, then
+  shares `navigator.geolocation` to `busLocations/<uid>`) and the live bus
+  markers everyone sees. A location older than 2 minutes is hidden. Rules
+  require a verified email and a `busDrivers` document to write one, and the
+  allowed school names are listed in `firestore.rules` — keep them in step with
+  `bus-stops.js`.
 - `sign-in-link.js` — sends Firebase email sign-in links.
 - `firestore.rules` — students manage only their own invites; a parent may only
   mark their own invite active; admins may view and revoke invites across

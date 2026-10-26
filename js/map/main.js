@@ -4,15 +4,19 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-import { auth, welcomePage } from "../core/auth.js";
+import { auth, demoMode, welcomePage } from "../core/auth.js";
 
 import {
+    applyPendingDemoRole,
     claimParentInvites,
+    setDemoRole,
     resolveAccess,
     setAccessMessage
 } from "../core/access.js";
 
 import { initParentManager } from "./parents.js";
+import { initDriverManager } from "./drivers.js";
+import { initDriverPanel, watchLiveBuses } from "./live-buses.js";
 
 import {
     addBusStopLayers,
@@ -48,6 +52,20 @@ const schoolFilters = document.getElementById("school-filters");
 const schoolSelect = document.getElementById("school-select");
 const accountEmail = document.getElementById("account-email");
 const accountRole = document.getElementById("account-role");
+const accountMenu = document.getElementById("account-menu");
+const sidebar = document.getElementById("sidebar");
+const sheetToggle = document.getElementById("sheet-toggle");
+const mapLoading = document.getElementById("map-loading");
+const mapLoadingText = document.getElementById("map-loading-text");
+const recenterButton = document.getElementById("map-recenter");
+
+// Matches the phone breakpoint in style.css, where the sidebar becomes a
+// bottom sheet over the map.
+const phoneLayout = window.matchMedia("(max-width: 760px)");
+
+// Brand colours for what the map draws on top of the school colours.
+const homeMarkerColor = "#1f2421";
+const nearestStopColor = "#2c5a37";
 
 let map = null;
 let addressMarker = null;
@@ -61,6 +79,7 @@ let suggestionTimer = null;
 let suggestionController = null;
 let selectedSuggestion = null;
 let activeSuggestionIndex = -1;
+let liveBuses = null;
 
 const visibleSchools = new Set(schoolSummary().map(school => school.name));
 
@@ -69,6 +88,36 @@ function isArizonaFeature(feature) {
 
     return region?.short_code?.toUpperCase() === "US-AZ" ||
         feature.properties?.short_code?.toUpperCase() === "US-AZ";
+}
+
+// `tone` picks the status icon and colour: info, loading, success or error.
+function setStatus(message, tone = "info") {
+    mapStatus.textContent = message;
+    mapStatus.dataset.tone = tone;
+}
+
+function setSheetCollapsed(collapsed) {
+    sidebar.classList.toggle("is-collapsed", collapsed);
+    sheetToggle.setAttribute("aria-expanded", String(!collapsed));
+    sheetToggle.setAttribute("aria-label", collapsed ? "Show panel" : "Hide panel");
+}
+
+// On a phone, get the sheet out of the way once there is a result to look at.
+function collapseSheetOnPhone() {
+    if (phoneLayout.matches) setSheetCollapsed(true);
+}
+
+// Keeps map.flyTo/fitBounds centring on the part of the map the bottom sheet
+// does not cover.
+function padMapForSheet() {
+    if (!map) return;
+
+    const bottom = phoneLayout.matches
+        ? Math.round(map.getContainer().getBoundingClientRect().bottom -
+            sidebar.getBoundingClientRect().top)
+        : 0;
+
+    map.setPadding({ top: 0, right: 0, bottom: Math.max(0, bottom), left: 0 });
 }
 
 function constrainMapToArea() {
@@ -116,6 +165,7 @@ function buildSchoolFilters() {
             }
 
             setVisibleSchools(map, visibleSchools);
+            liveBuses?.refresh();
         });
 
         label.append(checkbox, swatch, name, count);
@@ -162,8 +212,7 @@ async function showWalkingRoute(stopCoordinates, destinationCoordinates, schoolN
 
         if (!route?.geometry?.coordinates?.length) {
             clearWalkingRoute();
-            mapStatus.textContent =
-                `Found ${stopName}, but no walking route to the address is available.`;
+            setStatus(`Found ${stopName}, but no walking route to the address is available.`);
             return;
         }
 
@@ -189,17 +238,20 @@ async function showWalkingRoute(stopCoordinates, destinationCoordinates, schoolN
 
         const distanceMiles = (route.distance / 1609.344).toFixed(1);
         const durationMinutes = Math.max(1, Math.round(route.duration / 60));
-        mapStatus.textContent =
+        setStatus(
             `Walking route from the nearest ${schoolName} stop (${stopName}) ` +
-            `to your address: ${distanceMiles} mi, about ${durationMinutes} min.`;
+            `to your address: ${distanceMiles} mi, about ${durationMinutes} min.`,
+            "success"
+        );
     } catch (error) {
         if (requestId !== walkingRouteRequestId) return;
 
         console.error(error);
         clearWalkingRoute();
-        mapStatus.textContent =
+        setStatus(
             `Found ${stopName}, but walking directions could not be loaded. ` +
-            "Check that walking directions are enabled for the Mapbox token.";
+            "Check that walking directions are enabled for the Mapbox token."
+        );
     }
 }
 
@@ -211,14 +263,14 @@ async function showNearestStop() {
     if (!schoolName) return;
 
     if (!lastAddressCenter) {
-        mapStatus.textContent = "Enter your address to find the nearest bus stop.";
+        setStatus("Enter your address to find the nearest bus stop.");
         return;
     }
 
     const nearest = nearestBusStop(schoolName, lastAddressCenter);
 
     if (!nearest) {
-        mapStatus.textContent = `No mapped bus stops found for ${schoolName}.`;
+        setStatus(`No mapped bus stops found for ${schoolName}.`, "error");
         return;
     }
 
@@ -237,7 +289,7 @@ async function showNearestStop() {
     if (nearestStopMarker) {
         nearestStopMarker.setLngLat(coordinates).setPopup(popup);
     } else {
-        nearestStopMarker = new mapboxgl.Marker({ color: "#1565c0" })
+        nearestStopMarker = new mapboxgl.Marker({ color: nearestStopColor })
             .setLngLat(coordinates)
             .setPopup(popup)
             .addTo(map);
@@ -261,8 +313,11 @@ async function showNearestStop() {
         zoom: addressFocusZoom
     });
 
-    mapStatus.textContent =
-        `Nearest ${schoolName} bus stop: ${stop.name} (${distanceMiles} mi away).`;
+    setStatus(
+        `Nearest ${schoolName} bus stop: ${stop.name} (${distanceMiles} mi away).`,
+        "success"
+    );
+    collapseSheetOnPhone();
 
     await showWalkingRoute(coordinates, lastAddressCenter, schoolName, stop.name);
 }
@@ -326,11 +381,11 @@ async function searchAddress(event) {
     const address = addressInput.value.trim();
 
     if (!address) {
-        mapStatus.textContent = "Enter an address to search.";
+        setStatus("Enter an address to search.", "error");
         return;
     }
 
-    mapStatus.textContent = "Finding address…";
+    setStatus("Finding address…", "loading");
 
     try {
         let feature = selectedSuggestion?.place_name === address
@@ -360,13 +415,15 @@ async function searchAddress(event) {
         selectedSuggestion = null;
 
         if (!feature) {
-            mapStatus.textContent =
-                "No matching address found in Arizona. Check the address and try again.";
+            setStatus(
+                "No matching address found in Arizona. Check the address and try again.",
+                "error"
+            );
             return;
         }
 
         if (!isArizonaFeature(feature)) {
-            mapStatus.textContent = "Enter an address located in Arizona.";
+            setStatus("Enter an address located in Arizona.", "error");
             return;
         }
 
@@ -377,7 +434,7 @@ async function searchAddress(event) {
         if (addressMarker) {
             addressMarker.setLngLat([longitude, latitude]);
         } else {
-            addressMarker = new mapboxgl.Marker({ color: "#d32f2f" });
+            addressMarker = new mapboxgl.Marker({ color: homeMarkerColor });
             addressMarker.setLngLat([longitude, latitude]);
         }
 
@@ -391,12 +448,12 @@ async function searchAddress(event) {
                 zoom: addressFocusZoom
             });
 
-            mapStatus.textContent = `Pin added for ${feature.place_name}.`;
+            setStatus(`Pin added for ${feature.place_name}.`, "success");
+            collapseSheetOnPhone();
         }
     } catch (error) {
         console.error(error);
-        mapStatus.textContent =
-            "Unable to find that address. Please try again.";
+        setStatus("Unable to find that address. Please try again.", "error");
     }
 }
 
@@ -445,15 +502,23 @@ function showAddressSuggestions(features) {
     addressInput.setAttribute("aria-expanded", String(hasSuggestions));
 }
 
-function showSuggestionError() {
+// A single line in the suggestion list that is not an address: searching,
+// nothing found, or suggestions unavailable.
+function showSuggestionMessage(text, className = "") {
     addressSuggestions.replaceChildren();
+    activeSuggestionIndex = -1;
+    addressInput.removeAttribute("aria-activedescendant");
     const message = document.createElement("li");
-    message.className = "address-suggestion-message";
+    message.className = `address-suggestion-message ${className}`.trim();
     message.setAttribute("role", "status");
-    message.textContent = "Arizona suggestions unavailable. Press Enter to search the address.";
+    message.textContent = text;
     addressSuggestions.append(message);
     addressSuggestions.hidden = false;
     addressInput.setAttribute("aria-expanded", "true");
+}
+
+function showSuggestionError() {
+    showSuggestionMessage("Arizona suggestions unavailable. Press Enter to search the address.");
 }
 
 async function fetchAddressSuggestions(query) {
@@ -480,10 +545,13 @@ async function fetchAddressSuggestions(query) {
         }
 
         const result = await response.json();
-        if (!signal.aborted) {
-            showAddressSuggestions(
-                (result.features || []).filter(isArizonaFeature)
-            );
+        if (signal.aborted) return;
+
+        const features = (result.features || []).filter(isArizonaFeature);
+        if (features.length) {
+            showAddressSuggestions(features);
+        } else {
+            showSuggestionMessage("No Arizona addresses match. Try adding a street number or city.");
         }
     } catch (error) {
         if (error.name === "AbortError") return;
@@ -504,7 +572,10 @@ function updateAddressSuggestions() {
         return;
     }
 
-    suggestionTimer = setTimeout(() => fetchAddressSuggestions(query), 250);
+    suggestionTimer = setTimeout(() => {
+        showSuggestionMessage("Searching…", "is-loading");
+        fetchAddressSuggestions(query);
+    }, 250);
 }
 
 function moveActiveSuggestion(direction) {
@@ -595,7 +666,7 @@ async function initializeMap() {
                     "line-join": "round"
                 },
                 paint: {
-                    "line-color": "#1565c0",
+                    "line-color": nearestStopColor,
                     "line-width": 5,
                     "line-opacity": 0.85
                 }
@@ -606,15 +677,24 @@ async function initializeMap() {
             setViewMode(false, { animate: false });
             fitToBusStops(map);
             buildSchoolFilters();
+            liveBuses = watchLiveBuses(map, visibleSchools);
 
             viewToggle.disabled = false;
+            recenterButton.disabled = false;
+            mapLoading.hidden = true;
             map.resize();
             constrainMapToArea();
+            padMapForSheet();
         });
 
         viewToggle.addEventListener("click", () => {
             setViewMode(!is3D, { animate: true });
         });
+
+        recenterButton.addEventListener("click", () => fitToBusStops(map));
+
+        new ResizeObserver(padMapForSheet).observe(sidebar);
+        phoneLayout.addEventListener("change", padMapForSheet);
 
         addressForm.addEventListener("submit", searchAddress);
         addressInput.addEventListener("input", updateAddressSuggestions);
@@ -635,12 +715,14 @@ async function initializeMap() {
             setTimeout(closeAddressSuggestions, 120);
         });
         schoolSelect.addEventListener("change", showNearestStop);
+        addressInput.addEventListener("focus", () => setSheetCollapsed(false));
 
         mapInitialized = true;
     } catch (error) {
         console.error(error);
-        mapStatus.textContent =
+        mapLoadingText.textContent =
             "The map failed to load. Refresh the page and try again.";
+        mapLoading.classList.add("is-error");
     } finally {
         mapInitializing = false;
     }
@@ -651,7 +733,26 @@ document.getElementById("sign-out").addEventListener("click", async () => {
         await signOut(auth);
     } catch (error) {
         console.error(error);
-        mapStatus.textContent = "Unable to sign out. Please try again.";
+        setStatus("Unable to sign out. Please try again.", "error");
+    }
+});
+
+sheetToggle.addEventListener("click", () => {
+    setSheetCollapsed(!sidebar.classList.contains("is-collapsed"));
+});
+
+// The account menu is a <details>: close it on a click outside it or on one
+// of its buttons, and on Escape.
+document.addEventListener("click", event => {
+    if (!accountMenu.contains(event.target) || event.target.closest(".account-panel button")) {
+        accountMenu.open = false;
+    }
+});
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && accountMenu.open) {
+        accountMenu.open = false;
+        accountMenu.querySelector("summary").focus();
     }
 });
 
@@ -664,12 +765,37 @@ function showAccount(user, role) {
     } else if (role === "admin") {
         accountRole.textContent = "Admin";
         accountRole.hidden = false;
+    } else if (role === "driver") {
+        accountRole.textContent = "Bus driver";
+        accountRole.hidden = false;
     } else {
         accountRole.hidden = true;
     }
 
     document.getElementById("manage-parents").textContent =
         role === "admin" ? "Manage parent invites" : "Parent access";
+}
+
+// Demo mode only: lets judges flip between roles on one account.
+function showDemoRolePicker(user, access) {
+    const wrap = document.getElementById("demo-role-wrap");
+    const select = document.getElementById("demo-role");
+
+    select.value = access.demo ? access.role : "";
+    wrap.hidden = false;
+
+    select.addEventListener("change", async () => {
+        select.disabled = true;
+
+        try {
+            await setDemoRole(user, select.value);
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            select.disabled = false;
+            setStatus("Could not switch role. Check that firestore.rules is published.", "error");
+        }
+    });
 }
 
 onAuthStateChanged(auth, async user => {
@@ -691,6 +817,8 @@ onAuthStateChanged(auth, async user => {
             await auth.currentUser.getIdToken(true);
         }
 
+        if (demoMode) await applyPendingDemoRole(auth.currentUser);
+
         const access = await resolveAccess(auth.currentUser);
 
         // ---------------------------------------------------------------
@@ -710,6 +838,7 @@ onAuthStateChanged(auth, async user => {
         // ---------------------------------------------------------------
         if (
             !auth.currentUser.emailVerified &&
+            !demoMode &&
             access.role !== "parent" &&
             access.role !== "admin"
         ) {
@@ -729,12 +858,16 @@ onAuthStateChanged(auth, async user => {
         }
 
         showAccount(auth.currentUser, access.role);
+        if (demoMode) showDemoRolePicker(auth.currentUser, access);
 
         if (access.role === "parent") {
             // keeps the student's list showing that the parent made it in
             claimParentInvites(auth.currentUser, access.invites);
         } else if (access.role === "admin") {
             initParentManager(auth.currentUser, access.role);
+            initDriverManager(auth.currentUser);
+        } else if (access.role === "driver") {
+            initDriverPanel(auth.currentUser);
         } else {
             initParentManager(auth.currentUser);
         }

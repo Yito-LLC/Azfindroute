@@ -11,7 +11,8 @@ import {
     sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-import { auth } from "../core/auth.js";
+import { auth, demoMode } from "../core/auth.js";
+import { savePendingDemoRole } from "../core/access.js";
 
 import {
     currentView,
@@ -36,11 +37,21 @@ const roleNotes = {
     student: "Use your school email address so we can tell which school you " +
         "are at.",
     parent: "Use the address your student invited. That invite is what lets " +
-        "you in, so a different address will not work."
+        "you in, so a different address will not work.",
+    driver: "Use the address the district added as a bus driver. Once you " +
+        "verify it, you can share your bus's location from the map."
 };
 
 function chooseRole(role) {
     roleNote.textContent = roleNotes[role] || "";
+
+    // In demo mode the pick is the role; main.js saves it once signed in.
+    if (demoMode) {
+        savePendingDemoRole(role);
+        roleNote.textContent = "Demo mode: any email works, and you can switch " +
+            "role later from the account menu.";
+    }
+
     showView("signup");
     showMessage("");
 }
@@ -71,6 +82,12 @@ signUpForm.addEventListener("submit", async event => {
             emailInput.value.trim(),
             passwordInput.value
         );
+
+        // No verification mail in demo mode; watchAuthState opens the map.
+        if (demoMode) {
+            showMessage("Account created. Opening the map…");
+            return;
+        }
 
         showView("verification");
 

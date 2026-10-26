@@ -10,19 +10,43 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null && request.auth.token.email != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function callerEmail() {
+      return request.auth.token.email.lower();
+    }
+
+    // ---------------------------------------------------------------
+    // TEMPORARY DEMO MODE - turn off after judging
+    // Keep in step with demoMode in js/core/auth.js. While true, anyone may
+    // pick their own role in demoRoles/<uid>, and an account that picked
+    // "driver" may share a bus location without a verified email or a
+    // busDrivers document. See "Active temporary changes" in CLAUDE.md.
+    // ---------------------------------------------------------------
+    function demoMode() {
+      return true;
+    }
+
+    function demoRole() {
+      return exists(/databases/$(database)/documents/demoRoles/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/demoRoles/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    match /demoRoles/{uid} {
+      allow get, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if demoMode() && signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['role'])
+        && request.resource.data.role in ['student', 'parent', 'driver'];
+    }
+
     match /parentInvites/{inviteId} {
-
-      function signedIn() {
-        return request.auth != null && request.auth.token.email != null;
-      }
-
-      function isAdmin() {
-        return signedIn() && request.auth.token.admin == true;
-      }
-
-      function callerEmail() {
-        return request.auth.token.email.lower();
-      }
 
       function mine() {
         return request.auth.uid == resource.data.studentUid
@@ -73,6 +97,49 @@ service cloud.firestore {
              .hasOnly(['status', 'parentUid', 'acceptedAt'])
         && request.resource.data.status == 'active'
         && request.resource.data.parentUid == request.auth.uid;
+    }
+
+    // busDrivers holds one document per bus driver, with the driver's
+    // lowercased email as the id. It is what makes an account a driver, so
+    // only an admin may add or remove one; a driver may read only their own.
+    match /busDrivers/{email} {
+      allow get: if signedIn() && (isAdmin() || callerEmail() == email);
+      allow list, delete: if isAdmin();
+      allow create, update: if isAdmin()
+        && email == email.lower()
+        && request.resource.data.keys().hasOnly(['email', 'addedBy', 'addedAt'])
+        && request.resource.data.email == email;
+    }
+
+    // busLocations holds one document per driver currently sharing, with the
+    // driver's uid as the id. Everyone signed in can watch the buses; only a
+    // verified driver writes their own, and it carries no email or name.
+    match /busLocations/{driverUid} {
+      function isDriver() {
+        return signedIn() && (
+          (request.auth.token.email_verified == true
+            && exists(/databases/$(database)/documents/busDrivers/$(callerEmail())))
+          || (demoMode() && demoRole() == 'driver')
+        );
+      }
+
+      function validLocation() {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['driverUid', 'school', 'route', 'lng', 'lat', 'heading', 'updatedAt'])
+          && data.driverUid == request.auth.uid
+          && data.school in ['Corona del Sol', 'Desert Vista', 'Marcos de Niza',
+                             'McClintock', 'Mountain Pointe', 'Tempe High']
+          && data.route is string && data.route.size() > 0 && data.route.size() <= 40
+          // roughly Arizona, like arizonaBounds in main.js
+          && data.lng is number && data.lng >= -115 && data.lng <= -109
+          && data.lat is number && data.lat >= 31 && data.lat <= 37.1
+          && (data.heading == null || data.heading is number)
+          && data.updatedAt == request.time;
+      }
+
+      allow read: if signedIn();
+      allow create, update: if isDriver() && driverUid == request.auth.uid && validLocation();
+      allow delete: if signedIn() && (request.auth.uid == driverUid || isAdmin());
     }
 
     match /{document=**} {

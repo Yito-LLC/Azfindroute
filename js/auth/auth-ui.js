@@ -12,7 +12,7 @@ import {
     signInWithPopup
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-import { auth, appPage, signInPage, welcomePage, normalizeEmail } from "../core/auth.js";
+import { auth, appPage, demoMode, signInPage, welcomePage, normalizeEmail } from "../core/auth.js";
 import { resolveAccess, takeAccessMessage } from "../core/access.js";
 
 const googleProvider = new GoogleAuthProvider();
@@ -197,7 +197,8 @@ export function watchAuthState(defaultView, isMidFlow = () => false) {
         try {
             await reload(user);
 
-            if (auth.currentUser.emailVerified) {
+            // Demo mode skips verification, so judges can get straight in.
+            if (auth.currentUser.emailVerified || demoMode) {
                 goToApp();
                 return;
             }

@@ -13,6 +13,7 @@ import {
 
 import {
     db,
+    demoMode,
     enforceSchoolEmail,
     isSchoolEmail,
     normalizeEmail
@@ -25,6 +26,11 @@ const developmentAdminUiBypass = true;
 // One document per student/parent pair, so siblings can each invite the same
 // parent and either of them can revoke only their own invite.
 const parentInvites = collection(db, "parentInvites");
+
+// One document per bus driver, keyed by their normalized email. Only an admin
+// with the trusted claim can add or remove one, so picking "bus driver" at
+// sign-up grants nothing on its own.
+const busDrivers = collection(db, "busDrivers");
 
 export function inviteId(studentUid, parentEmail) {
     return `${studentUid}__${normalizeEmail(parentEmail)}`;
@@ -92,6 +98,79 @@ export async function removeParentInvite(id) {
     await deleteDoc(doc(parentInvites, id));
 }
 
+// Demo mode only: the role a visitor picked, kept in demoRoles/<uid>. The pick
+// is made on signup.html before the account exists, so it waits in
+// localStorage until the map page can save it.
+const pendingDemoRoleKey = "busway:demo-role";
+export const demoRoles = ["student", "parent", "driver"];
+
+export function savePendingDemoRole(role) {
+    try {
+        localStorage.setItem(pendingDemoRoleKey, role);
+    } catch (error) {
+        console.warn("Could not remember the demo role.", error);
+    }
+}
+
+export async function applyPendingDemoRole(user) {
+    let role = null;
+
+    try {
+        role = localStorage.getItem(pendingDemoRoleKey);
+        localStorage.removeItem(pendingDemoRoleKey);
+    } catch (error) {
+        console.warn("Could not read the demo role.", error);
+    }
+
+    if (demoRoles.includes(role)) await setDemoRole(user, role);
+}
+
+// An empty role removes the pick, so the account goes back to its real role.
+export async function setDemoRole(user, role) {
+    const roleDoc = doc(db, "demoRoles", user.uid);
+
+    if (role) await setDoc(roleDoc, { role });
+    else await deleteDoc(roleDoc);
+}
+
+async function demoRoleFor(user) {
+    try {
+        const snapshot = await getDoc(doc(db, "demoRoles", user.uid));
+        const role = snapshot.data()?.role;
+
+        return demoRoles.includes(role) ? role : null;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export async function isBusDriver(email) {
+    const snapshot = await getDoc(doc(busDrivers, normalizeEmail(email)));
+
+    return snapshot.exists();
+}
+
+export async function driversForAdmin() {
+    const snapshot = await getDocs(busDrivers);
+
+    return snapshot.docs.map(driver => ({ id: driver.id, ...driver.data() }));
+}
+
+export async function addBusDriver(admin, driverEmail) {
+    const email = normalizeEmail(driverEmail);
+
+    await setDoc(doc(busDrivers, email), {
+        email,
+        addedBy: normalizeEmail(admin.email),
+        addedAt: serverTimestamp()
+    });
+}
+
+export async function removeBusDriver(email) {
+    await deleteDoc(doc(busDrivers, normalizeEmail(email)));
+}
+
 // Called the first time an invited parent actually signs in. The invite is the
 // parent's permanent key to the site, so this only records that they arrived.
 export async function claimParentInvites(user, invites) {
@@ -114,10 +193,17 @@ export async function claimParentInvites(user, invites) {
  * Works out whether a signed-in account may use the app and as what.
  *
  * - a trusted Firebase Auth admin claim grants admin access
+ * - a busDrivers document an admin created is a bus driver
  * - a district address is a student
  * - anything else needs a parent invite from a student
  */
 export async function resolveAccess(user) {
+    if (demoMode) {
+        const role = await demoRoleFor(user);
+
+        if (role) return { allowed: true, role, invites: [], demo: true };
+    }
+
     if (developmentAdminUiBypass) {
         return { allowed: true, role: "admin", invites: [] };
     }
@@ -129,6 +215,16 @@ export async function resolveAccess(user) {
     }
 
     const email = normalizeEmail(user.email);
+
+    try {
+        if (await isBusDriver(email)) {
+            return { allowed: true, role: "driver", invites: [] };
+        }
+    } catch (error) {
+        // Not being able to check only costs the driver tools; the account can
+        // still be a student or parent below.
+        console.error(error);
+    }
 
     if (isSchoolEmail(email)) {
         return { allowed: true, role: "student", invites: [] };

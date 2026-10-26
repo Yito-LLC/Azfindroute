@@ -911,7 +911,8 @@ input {
     outline-offset: 2px;
 }
 
-#manage-parents {
+#manage-parents,
+#manage-drivers {
     border-color: #1a56b3;
     color: #1a56b3;
     font-weight: 600;
@@ -1149,4 +1150,206 @@ input {
     border-radius: 4px;
     background: #f3e3cb;
     font-size: 13px;
+}
+
+/* Account menu: the email is the <summary>, the buttons drop down under it. */
+.account-menu {
+    position: relative;
+}
+
+.account-menu summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border: 1px solid #c8c8c8;
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+    list-style: none;
+}
+
+.account-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.account-panel {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 6px);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 180px;
+    padding: 10px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
+
+.map-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.map-recenter {
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+    color: #333;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.map-recenter:disabled {
+    cursor: wait;
+    opacity: .6;
+}
+
+.map-loading {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f6f6f6;
+    color: #555;
+}
+
+.map-loading[hidden] {
+    display: none;
+}
+
+.map-loading.is-error {
+    color: #b3261e;
+}
+
+.map-status[data-tone="error"] {
+    color: #b3261e;
+}
+
+.map-status[data-tone="success"] {
+    color: #2c5a37;
+}
+
+/* The sheet toggle only matters on a phone, where the sidebar is a bottom
+   sheet over the map (same breakpoint as phoneLayout in main.js). */
+.sheet-toggle {
+    display: none;
+}
+
+@media (max-width: 760px) {
+    .sheet-toggle {
+        display: block;
+        align-self: center;
+        width: 48px;
+        height: 6px;
+        padding: 0;
+        border: 0;
+        border-radius: 3px;
+        background: #c8c8c8;
+        cursor: pointer;
+    }
+
+    .search-panel.is-collapsed > :not(.sheet-toggle):not(#address-form) {
+        display: none;
+    }
+}
+
+/* Bus driver panel and live bus markers (live-buses.js). */
+.driver-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #e2e2e2;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.driver-panel h2 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.driver-panel .stop-legend-hint {
+    margin: 0;
+}
+
+.driver-toggle {
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: #2c5a37;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.driver-toggle.is-sharing {
+    background: #b3261e;
+}
+
+.driver-toggle:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+.driver-toggle:focus-visible {
+    outline: 2px solid #666;
+    outline-offset: 2px;
+}
+
+.bus-marker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px 3px 5px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    background: var(--bus-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.bus-marker-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.bus-popup-updated {
+    margin: 0;
+    color: #666;
+    font-size: 12px;
+}
+
+/* Demo mode role picker in the account menu (main.js). */
+.demo-role {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #666;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.demo-role select {
+    padding: 6px 10px;
+    border: 1px solid #c8c8c8;
+    border-radius: 999px;
+    background: #fff;
+    color: #333;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 400;
 }
