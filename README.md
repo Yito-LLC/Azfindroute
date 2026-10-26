@@ -3,40 +3,46 @@ Repository to help with the Tempe Union Bus System.
 
 ## Pages
 
-- `welcome.html` / `welcome.js` — the landing screen, and the way back in when
+The HTML pages sit at the top level (sent emails link to `/signin.html`);
+scripts are in `js/core/` (shared), `js/auth/` and `js/map/`, styles in
+`css/`, images in `assets/`.
+
+- `welcome.html` / `js/auth/welcome.js` — the landing screen, and the way back in when
   you are signed out. It carries no form: just the logo, **Login** and
   **Register**. Everything else is one screen per job behind it. The shared
   footer links to site information and support.
-- `signin.html` / `signin.js` — signing an existing account in: email and
+- `signin.html` / `js/auth/signin.js` — signing an existing account in: email and
   password, or Google. "Forgot password?" emails a sign-in link, because
   opening one lands on the "set a password" step. Firebase email links land
   here too, so this page also owns "confirm your address" and "set a password".
-- `signup.html` / `signup.js` — creating a new account, in two steps. Step one
+- `signup.html` / `js/auth/signup.js` — creating a new account, in two steps. Step one
   asks whether you are a student or a parent; step two is the form. Keeping it
   apart from `signin.html` is deliberate: one set of email and password fields
   serving both actions was the thing people got wrong.
-- `auth-ui.js` — the parts the auth pages share: the status line, the Google
+- `js/auth/auth-ui.js` — the parts the auth pages share: the status line, the Google
   button, the verification step, friendly wording for Firebase error codes, the
   back chevron and the redirect rules. Each step of a flow is a
   `<section data-view="...">` and the chrome around it carries
   `data-for-view="..."`, so a page declares only the steps it uses and headings
   do not linger into the wrong step.
-- `index.html` / `main.js` — the map app. Redirects to `welcome.html` when
+- `index.html` / `js/map/main.js` — the map app. Redirects to `welcome.html` when
   nobody is signed in or the email is not verified yet.
-- `auth.js` — shared Firebase app, auth and Firestore instances, plus the
+- `js/core/auth.js` — shared Firebase app, auth and Firestore instances, plus the
   school email domain list.
-- `access.js` — works out whether an account may use the site and as what
+- `js/core/access.js` — works out whether an account may use the site and as what
   (student, invited parent, or admin), and stores the parent invites.
-- `parents.js` — the "Parent access" dialog students use to add their parents.
-- `sign-in-link.js` — sends the email sign-in links used by invites.
+- `js/map/parents.js` — the "Parent access" dialog students use to add their parents.
+- `js/core/sign-in-link.js` — sends the email sign-in links used by invites.
+- `js/map/bus-stop-layers.js` / `js/map/bus-stops.js` — the stop dots, their
+  cards, and the stop data they are drawn from.
 - `firestore.rules` — security rules for the parent invites.
-- `style.css` — shared styles for every page.
+- `css/style.css` — shared styles for every page.
 - `site-info.html` — privacy policy, terms of use, accessibility information,
   and help/FAQ, linked from the footer on every page.
-- `i18n.js` — shared English, Simplified Chinese, and Spanish translations.
+- `js/core/i18n.js` — shared English, Simplified Chinese, and Spanish translations.
   Choose a language in any page footer; the choice is saved in local storage
   and reused on other pages in the same browser.
-- `busway-logo.png` — the Busway wordmark, used on both auth pages and in
+- `assets/busway-logo.png` — the Busway wordmark, used on both auth pages and in
   the map page header.
 
 ## Running it

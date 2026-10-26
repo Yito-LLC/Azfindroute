@@ -4,13 +4,13 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-import { auth, welcomePage } from "./auth.js";
+import { auth, welcomePage } from "../core/auth.js";
 
 import {
     claimParentInvites,
     resolveAccess,
     setAccessMessage
-} from "./access.js";
+} from "../core/access.js";
 
 import { initParentManager } from "./parents.js";
 
@@ -19,7 +19,8 @@ import {
     fitToBusStops,
     setVisibleSchools,
     schoolSummary,
-    nearestBusStop
+    nearestBusStop,
+    stopPopupHtml
 } from "./bus-stop-layers.js";
 
 const initialCenter = [-111.94, 33.4255];
@@ -51,7 +52,7 @@ const accountRole = document.getElementById("account-role");
 let map = null;
 let addressMarker = null;
 let nearestStopMarker = null;
-let is3D = true;
+let is3D = false;
 let mapInitialized = false;
 let mapInitializing = false;
 let lastAddressCenter;
@@ -224,18 +225,14 @@ async function showNearestStop() {
     const { stop, distanceMeters } = nearest;
     const coordinates = [stop.lon, stop.lat];
     const distanceMiles = (distanceMeters / 1609.344).toFixed(1);
-    const popupContent = document.createElement("div");
-    const heading = document.createElement("strong");
-    const address = document.createElement("p");
-    const distance = document.createElement("p");
 
-    heading.textContent = `Nearest ${schoolName} bus stop`;
-    address.textContent = stop.name;
-    distance.textContent = `${distanceMiles} mi from your address`;
-    popupContent.append(heading, address, distance);
-
-    const popup = new mapboxgl.Popup({ offset: 28 })
-        .setDOMContent(popupContent);
+    const popup = new mapboxgl.Popup({
+        offset: 28,
+        maxWidth: "320px",
+        className: "stop-popup-container"
+    }).setHTML(stopPopupHtml(stop, {
+        nearestNote: `${distanceMiles} mi from your address`
+    }));
 
     if (nearestStopMarker) {
         nearestStopMarker.setLngLat(coordinates).setPopup(popup);
@@ -244,6 +241,17 @@ async function showNearestStop() {
             .setLngLat(coordinates)
             .setPopup(popup)
             .addTo(map);
+
+        // Like the stop dots, resting on the pin for a moment shows its card.
+        const markerElement = nearestStopMarker.getElement();
+        let hoverTimer = null;
+
+        markerElement.addEventListener("mouseenter", () => {
+            hoverTimer = setTimeout(() => {
+                if (!nearestStopMarker.getPopup().isOpen()) nearestStopMarker.togglePopup();
+            }, 450);
+        });
+        markerElement.addEventListener("mouseleave", () => clearTimeout(hoverTimer));
     }
 
     if (!popup.isOpen()) nearestStopMarker.togglePopup();
@@ -538,8 +546,8 @@ async function initializeMap() {
             center: initialCenter,
             zoom: 15,
             maxBounds: mapAreaBounds,
-            pitch: 60,
-            bearing: -17
+            pitch: 0,
+            bearing: 0
         });
 
         map.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -593,8 +601,8 @@ async function initializeMap() {
                 }
             }, "bus-stop-circles");
 
-            // the district-wide overview is a flat view: 3D buildings only draw
-            // from zoom 14 in, so start in 2D and let the toggle tilt back
+            // 2D is the default: the district-wide overview is a flat view, and
+            // 3D buildings only draw from zoom 14 in anyway
             setViewMode(false, { animate: false });
             fitToBusStops(map);
             buildSchoolFilters();

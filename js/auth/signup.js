@@ -11,7 +11,7 @@ import {
     sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-import { auth } from "./auth.js";
+import { auth } from "../core/auth.js";
 
 import {
     currentView,

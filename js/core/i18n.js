@@ -52,11 +52,11 @@ Address|地址|Dirección
 Search address|搜索地址|Buscar dirección
 Address suggestions|地址建议|Sugerencias de direcciones
 Bus stops by school|按学校查看公交站点|Paradas de autobús por escuela
-Enter your address and choose a school to pin its nearest bus stop. Click any dot for routes and times.|输入地址并选择学校，即可标出最近的公交站点。点击地图上的点查看路线和时间。|Ingresa tu dirección y elige una escuela para marcar la parada más cercana. Selecciona un punto para ver rutas y horarios.
+Enter your address and choose a school to pin its nearest bus stop. Hover over or tap any dot for routes, times and directions.|输入地址并选择学校，即可标出最近的公交站点。将鼠标悬停或点按地图上的点，查看路线、时间和导航。|Ingresa tu dirección y elige una escuela para marcar la parada más cercana. Pasa el cursor o toca un punto para ver rutas, horarios e indicaciones.
 Switch to 2D|切换到二维视图|Cambiar a vista 2D
 Switch to 3D|切换到三维视图|Cambiar a vista 3D
 Language|语言|Idioma
-Interactive 3D map of Phoenix, Arizona|亚利桑那州凤凰城交互式三维地图|Mapa interactivo en 3D de Phoenix, Arizona
+Interactive map of Phoenix, Arizona|亚利桑那州凤凰城交互式地图|Mapa interactivo de Phoenix, Arizona
 Parent access|家长访问权限|Acceso para padres
 Parent invites|家长邀请|Invitaciones para padres
 Close|关闭|Cerrar
@@ -106,7 +106,8 @@ Route|路线|Ruta
 AM leaves|上午发车|Salida por la mañana
 PM arrives|下午到达|Llegada por la tarde
 Approximate location — only the street could be matched.|位置为近似值——只能匹配到街道。|Ubicación aproximada: solo se pudo encontrar la calle.
-Pinned on the district's own route map.|根据学区路线图标注。|Ubicado en el mapa de rutas del distrito.
+Nearest stop|最近的站点|Parada más cercana
+Get directions|获取路线|Cómo llegar
 School|学校|Escuela
 Finding address…|正在查找地址…|Buscando dirección…
 Enter an address to search.|请输入要搜索的地址。|Ingresa una dirección para buscar.

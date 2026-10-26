@@ -31,18 +31,18 @@ domain, so it works as-is.
   keep `developmentAdminUiBypass` false outside local testing. Firestore rules
   still require a trusted admin claim for site-wide invite management.
 - **Where:** two blocks, both marked `TEMPORARY (added 2026-10-25) - REVERT THIS`
-  - [main.js](main.js) — in `onAuthStateChanged`: `resolveAccess` was moved
+  - [js/map/main.js](js/map/main.js) — in `onAuthStateChanged`: `resolveAccess` was moved
     above the verification gate, and the gate allows parent and admin roles
     through without email verification. Reverting means putting the
     `if (!auth.currentUser.emailVerified)` check back *before* `resolveAccess`
     and removing both role exceptions.
-  - [auth-ui.js](auth-ui.js) — in `watchAuthState`, which both auth pages use:
+  - [js/auth/auth-ui.js](js/auth/auth-ui.js) — in `watchAuthState`, which both auth pages use:
     the block that calls `resolveAccess` and sends parents or admins straight
     to the app. Reverting means deleting that block so any unverified account
     shows the verification view. (This lived in `signin.js` until the
     sign-in/sign-up split moved the shared watcher into `auth-ui.js`.)
 - **Not temporary, keep it:** the `try`/`catch` around `sendEmailVerification`
-  in the create-account handler in [signup.js](signup.js). That is ordinary
+  in the create-account handler in [js/auth/signup.js](js/auth/signup.js). That is ordinary
   error handling — a mail failure is not a failed sign-up.
 
 ### 2. `email_verified` dropped from the Firestore create rule
@@ -64,6 +64,23 @@ domain, so it works as-is.
   not exist yet evaluates `resource` as null, so the old combined rule denied
   the existence check in `addParentInvite()` and broke adding a parent
   entirely. Folding those two back together reintroduces that bug.
+
+## Layout
+
+The HTML pages stay at the top level on purpose: invite and sign-in emails
+already sent link to `/signin.html`, and `auth.js` resolves its page names
+against the current page's URL. Everything else is grouped:
+
+- `js/core/` — shared by every page: `auth.js`, `access.js`,
+  `sign-in-link.js`, `i18n.js`.
+- `js/auth/` — the auth pages: `auth-ui.js`, `welcome.js`, `signin.js`,
+  `signup.js`.
+- `js/map/` — the map app: `main.js`, `parents.js`, `bus-stop-layers.js` and
+  the stop data in `bus-stops.js`.
+- `css/style.css` — the one stylesheet, shared by every page.
+- `assets/busway-logo.png` — the wordmark.
+
+Modules in `js/auth/` and `js/map/` import shared code as `../core/...`.
 
 ## Pages
 

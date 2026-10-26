@@ -1,11 +1,11 @@
-import { normalizeEmail } from "./auth.js";
+import { normalizeEmail } from "../core/auth.js";
 import {
     addParentInvite,
     invitesForAdmin,
     invitesForStudent,
     removeParentInvite
-} from "./access.js";
-import { sendSignInLink } from "./sign-in-link.js";
+} from "../core/access.js";
+import { sendSignInLink } from "../core/sign-in-link.js";
 
 const dialog = document.getElementById("parents-dialog");
 const openButton = document.getElementById("manage-parents");

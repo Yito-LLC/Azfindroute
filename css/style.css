@@ -261,7 +261,7 @@ input {
     color: #666;
 }
 
-.map-view-switch[aria-pressed="false"] .switch-thumb {
+.map-view-switch[aria-pressed="true"] .switch-thumb {
     transform: translateX(36px);
 }
 
@@ -671,10 +671,66 @@ input {
     font-size: 11px;
 }
 
-.stop-popup-source {
-    margin: 8px 0 0;
-    color: #15803d;
+.stop-popup-nearest {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: center;
+    margin: 0 0 8px;
+    color: #555;
+    font-size: 12px;
+}
+
+.stop-popup-nearest span:first-child {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #1565c0;
+    color: #ffffff;
     font-size: 11px;
+    font-weight: 700;
+}
+
+.stop-popup-directions {
+    display: block;
+    margin: 10px 0 0;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: #1565c0;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color .15s ease;
+}
+
+.stop-popup-directions:hover,
+.stop-popup-directions:focus-visible {
+    background: #0d4a94;
+}
+
+/* Fade only: Mapbox positions the popup with `transform`, so animating that
+   property on the container would fight the map. */
+.stop-popup-container {
+    animation: stop-popup-in .18s ease-out;
+    transition: opacity .15s ease-in;
+}
+
+.stop-popup-container.is-closing {
+    opacity: 0;
+}
+
+@keyframes stop-popup-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stop-popup-container {
+        animation: none;
+        transition: none;
+    }
 }
 
 .site-footer {

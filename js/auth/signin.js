@@ -10,9 +10,9 @@ import {
     updatePassword
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-import { auth, normalizeEmail } from "./auth.js";
-import { claimParentInvites, resolveAccess } from "./access.js";
-import { forgetEmail, recallEmail, rememberEmail, sendSignInLink } from "./sign-in-link.js";
+import { auth, normalizeEmail } from "../core/auth.js";
+import { claimParentInvites, resolveAccess } from "../core/access.js";
+import { forgetEmail, recallEmail, rememberEmail, sendSignInLink } from "../core/sign-in-link.js";
 
 import {
     describeAuthError,

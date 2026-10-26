@@ -2,7 +2,7 @@
 // "I already have an account" from "I need one", so neither of the pages
 // behind it has to show both at once.
 
-import { signInPage, signUpPage } from "./auth.js";
+import { signInPage, signUpPage } from "../core/auth.js";
 import { readPageContext, watchAuthState } from "./auth-ui.js";
 
 document.getElementById("go-signin").addEventListener("click", () => {

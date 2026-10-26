@@ -36,7 +36,7 @@ export const schools = [
     },
     {
         "name": "Mountain Pointe",
-        "color": "#dc2626",
+        "color": "#7c3aed",
         "address": "4201 E Knox Rd, Phoenix, AZ 85044",
         "lon": -111.991769,
         "lat": 33.325129

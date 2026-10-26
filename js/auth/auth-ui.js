@@ -12,8 +12,8 @@ import {
     signInWithPopup
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
-import { auth, appPage, signInPage, welcomePage, normalizeEmail } from "./auth.js";
-import { resolveAccess, takeAccessMessage } from "./access.js";
+import { auth, appPage, signInPage, welcomePage, normalizeEmail } from "../core/auth.js";
+import { resolveAccess, takeAccessMessage } from "../core/access.js";
 
 const googleProvider = new GoogleAuthProvider();
 

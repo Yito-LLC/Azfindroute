@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Busway · Find Your Route</title>
 
-    <link rel="icon" href="busway-logo.png">
+    <link rel="icon" href="assets/busway-logo.png">
 
     <meta name="mapbox-access-token"
           content="pk.eyJ1Ijoibm9haDEwMSIsImEiOiJjbXZqMDZ4MHowYnI2MnhvdmoyczZvenEwIn0.DLUJBowla0lQQa5LOm9dgQ">
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css"
           rel="stylesheet">
 
-    <script type="module" src="i18n.js"></script>
-    <script type="module" src="main.js"></script>
+    <script type="module" src="js/core/i18n.js"></script>
+    <script type="module" src="js/map/main.js"></script>
 </head>
 
 <body>
@@ -41,7 +41,7 @@
     <main id="app-view" hidden>
         <header class="app-header">
             <h1>
-                <img class="app-logo" src="busway-logo.png"
+                <img class="app-logo" src="assets/busway-logo.png"
                      alt="Busway" width="540" height="270">
             </h1>
 
@@ -101,7 +101,8 @@
                     <div id="school-filters" class="school-filters"></div>
                     <p class="stop-legend-hint">
                         Enter your address and choose a school to pin its nearest
-                        bus stop. Click any dot for routes and times.
+                        bus stop. Hover over or tap any dot for routes, times and
+                        directions.
                     </p>
                 </section>
             </div>
@@ -112,19 +113,19 @@
                         id="map-view-toggle"
                         class="map-view-switch"
                         type="button"
-                        aria-label="Switch to 2D"
-                        aria-pressed="true"
+                        aria-label="Switch to 3D"
+                        aria-pressed="false"
                         disabled
                     >
                         <span class="switch-track" aria-hidden="true">
                             <span class="switch-thumb"></span>
-                            <span class="switch-option switch-option-3d">3D</span>
                             <span class="switch-option switch-option-2d">2D</span>
+                            <span class="switch-option switch-option-3d">3D</span>
                         </span>
                     </button>
                 </div>
 
-                <div id="map" aria-label="Interactive 3D map of Phoenix, Arizona"></div>
+                <div id="map" aria-label="Interactive map of Phoenix, Arizona"></div>
             </div>
         </div>
     </main>
