@@ -23,8 +23,11 @@ import {
 } from "./bus-stop-layers.js";
 
 const initialCenter = [-111.94, 33.4255];
-const arizonaCenter = [-111.66, 34.27];
 const arizonaBounds = [-114.818, 31.332, -109.045, 37.004];
+const mapAreaBounds = [
+    [-112.584, 33.0],
+    [-111.387, 33.581]
+];
 const minimumFocusZoom = 5;
 const addressFocusZoom = 18;
 const walkingRouteSourceId = "nearest-stop-walking-route";
@@ -65,6 +68,16 @@ function isArizonaFeature(feature) {
 
     return region?.short_code?.toUpperCase() === "US-AZ" ||
         feature.properties?.short_code?.toUpperCase() === "US-AZ";
+}
+
+function constrainMapToArea() {
+    const fittedZoom = map.cameraForBounds(mapAreaBounds, {
+        padding: 32,
+        pitch: 0,
+        bearing: 0
+    }).zoom;
+
+    map.setMinZoom(Math.max(minimumFocusZoom, fittedZoom));
 }
 
 function buildSchoolFilters() {
@@ -524,21 +537,13 @@ async function initializeMap() {
             style: "mapbox://styles/mapbox/streets-v12",
             center: initialCenter,
             zoom: 15,
+            maxBounds: mapAreaBounds,
             pitch: 60,
             bearing: -17
         });
 
         map.addControl(new mapboxgl.NavigationControl(), "top-right");
-
-        map.on("zoomend", () => {
-            if (map.getZoom() < minimumFocusZoom) {
-                map.easeTo({
-                    center: lastAddressCenter || arizonaCenter,
-                    zoom: minimumFocusZoom,
-                    duration: 700
-                });
-            }
-        });
+        map.on("resize", constrainMapToArea);
 
         map.on("load", () => {
             const firstSymbolLayer = map.getStyle().layers.find(
@@ -596,6 +601,7 @@ async function initializeMap() {
 
             viewToggle.disabled = false;
             map.resize();
+            constrainMapToArea();
         });
 
         viewToggle.addEventListener("click", () => {
