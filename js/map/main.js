@@ -836,7 +836,6 @@ onAuthStateChanged(auth, async user => {
         // TO REVERT: drop the parent/admin role checks below and restore
         // this check above resolveAccess, then undo the matching block in
         // auth-ui.js. Both are marked TEMPORARY.
-        // See "Active temporary changes" in CLAUDE.md.
         // ---------------------------------------------------------------
         if (
             !auth.currentUser.emailVerified &&

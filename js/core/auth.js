@@ -12,6 +12,8 @@ const firebaseConfig = {
     measurementId: "G-EDF773BX22"
 };
 
+//old stuffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
@@ -20,9 +22,10 @@ export const welcomePage = "welcome.html";
 export const signInPage = "signin.html";
 export const signUpPage = "signup.html";
 export const appPage = "index.html";
+// js some pgs
 
 // Students sign in with a district address. Parents never have one, so they get
-// in through an invite from their student instead (see access.js).
+// in through an invite from their student instead 
 export const schoolEmailDomains = ["tuhsd.k12.az.us"];
 
 // Flip this to true once the domain list above is confirmed with the district.
@@ -31,12 +34,11 @@ export const schoolEmailDomains = ["tuhsd.k12.az.us"];
 export const enforceSchoolEmail = false;
 
 // ---------------------------------------------------------------
-// TEMPORARY DEMO MODE - turn off after judging
+// TEMPORARY DEMO MODE turn off after judging
 //
 // While true, the role picked at sign-up (student, parent or bus driver) is
 // honored as-is, email verification is skipped, and the account menu lets
-// anyone switch role. Turn it off here AND in demoMode() in firestore.rules
-// (then publish the rules). See "Active temporary changes" in CLAUDE.md.
+// anyone switch role. 
 // ---------------------------------------------------------------
 export const demoMode = true;
 

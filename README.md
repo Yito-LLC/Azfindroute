@@ -153,11 +153,7 @@ marks the address. Walking routes require the Mapbox Directions API to be
 enabled for the access token.
 
 The map is constrained to the Phoenix-area bounds from Buckeye on the west to
-Florence on the east, Peoria on the north, and just north of Casa Grande on the
+Florence on the east, Peora on the north, and just north of Casa Grande on the
 south. Panning cannot move outside this area, and the minimum zoom adjusts to
-the viewport size to keep the view within it. Address lookup remains limited
-to Arizona.
-
-The Mapbox public access token is configured in the `mapbox-access-token` meta
-tag in `index.html`. The token needs Mapbox GL JS, Search JS, and Geocoding API
-access.
+the viewport size to keep the view within itAddress lookup remains limited
+to Arizona

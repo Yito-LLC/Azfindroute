@@ -211,8 +211,7 @@ export function watchAuthState(defaultView, isMidFlow = () => false) {
             // spent or the admin UI is being tested.
             //
             // TO REVERT: delete this block, so an unverified account always
-            // lands on the verification view. See "Active temporary changes"
-            // in CLAUDE.md.
+            // lands on the verification view.
             // ---------------------------------------------------------------
             const access = await resolveAccess(auth.currentUser);
 

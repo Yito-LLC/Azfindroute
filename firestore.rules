@@ -27,7 +27,7 @@ service cloud.firestore {
     // Keep in step with demoMode in js/core/auth.js. While true, anyone may
     // pick their own role in demoRoles/<uid>, and an account that picked
     // "driver" may share a bus location without a verified email or a
-    // busDrivers document. See "Active temporary changes" in CLAUDE.md.
+    // busDrivers documents
     // ---------------------------------------------------------------
     function demoMode() {
       return true;
@@ -73,7 +73,6 @@ service cloud.firestore {
       // `&& request.auth.token.email_verified == true` was removed from the
       // create rule below while the project's Firebase email quota was spent
       // and no verification mail could be delivered.
-      // See "Active temporary changes" in CLAUDE.md.
       // ---------------------------------------------------------------
       allow create: if signedIn()
         // && isSchoolEmail()
